@@ -1,0 +1,9 @@
+# Folders
+.idea
+tests/coverage
+vendor
+wordpress
+
+# Files
+*.log
+composer.lock
