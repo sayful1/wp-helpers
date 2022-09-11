@@ -125,7 +125,7 @@ interface DataStoreInterface {
 	 *
 	 * @param array $args The optional arguments.
 	 *
-	 * @return int|int[]|array Number of found records
+	 * @return int|array Number of found records
 	 */
 	public function count_records( array $args = [] );
 }

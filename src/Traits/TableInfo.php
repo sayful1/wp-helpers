@@ -104,7 +104,7 @@ trait TableInfo {
 	 * Format data by type
 	 *
 	 * @param string $table The table name.
-	 * @param array  $data The data that is going to insert into database.
+	 * @param array $data The data that is going to insert into database.
 	 *
 	 * @return array
 	 */
@@ -132,7 +132,7 @@ trait TableInfo {
 	 * Get data format for db
 	 *
 	 * @param string $table The table name.
-	 * @param array  $data The data that is going to insert into database.
+	 * @param array $data The data that is going to insert into database.
 	 *
 	 * @return array
 	 */
@@ -180,11 +180,11 @@ trait TableInfo {
 			}
 
 			if ( in_array( $info['type'], static::get_integer_data_type(), true ) ) {
-				$default = 0;
+				$default = $info['nullable'] ? null : 0;
 			}
 
 			if ( in_array( $info['type'], static::get_float_data_type(), true ) ) {
-				$default = 0;
+				$default = $info['nullable'] ? null : 0;
 			}
 
 			$data[ $column_name ] = $default;

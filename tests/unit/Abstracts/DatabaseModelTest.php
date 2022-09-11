@@ -26,7 +26,7 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 
 		global $wpdb;
 		$table_name = $this->instance->get_table_name();
-		// $wpdb->query( "DROP TABLE IF EXISTS $table_name" );
+//		$wpdb->query( "DROP TABLE IF EXISTS $table_name" );
 	}
 
 	public function _create_temporary_tables( $query ) {
@@ -62,7 +62,8 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 	}
 
 	public function test_create_records() {
-		$id  = $this->instance->create( [ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments' ] );
+		wp_set_current_user( 1 );
+		$id  = $this->instance->create( [ 'commission' => 1.5, 'comment' => 'Optional comments' ] );
 		$ids = $this->instance->batch_create( [
 			[ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 2' ],
 			[ 'user_id' => 1, 'commission' => 1.6, 'comment' => 'Optional comments 3' ]
@@ -103,6 +104,13 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 
 		$this->assertEquals( 4.5, $this->instance->find_single( $id2 )->get_prop( 'commission' ) );
 		$this->assertEquals( 5.5, $this->instance->find_single( $id3 )->get_prop( 'commission' ) );
+
+		// It cannot update value without id
+		$is_updated = $item1->update( [
+			'commission' => 4.5,
+			'comment'    => 'This one is not going to update as there is not id.'
+		] );
+		$this->assertFalse( $is_updated );
 	}
 
 	public function test_trash_and_restore_and_delete_record() {
@@ -132,5 +140,30 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 		$this->assertTrue( $item2 instanceof \ArrayObject );
 
 		$this->instance->batch_delete( [ $id1, $id2 ] );
+	}
+
+	public function test_count_records() {
+		$ids = $this->instance->batch_create( [
+			[ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 2' ],
+			[ 'user_id' => 1, 'commission' => 1.6, 'comment' => 'Optional comments 3' ]
+		] );
+
+		$counts = $this->instance->count_records();
+
+		$this->assertArrayHasKey( 'all', $counts );
+	}
+
+	public function test_batch_crud_operations() {
+		$response  = $this->instance->batch( 'create', [
+			[ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 2' ],
+			[ 'user_id' => 1, 'commission' => 1.6, 'comment' => 'Optional comments 3' ]
+		] );
+		$response2 = $this->instance->batch( 'invalid_batch', [
+			[ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 2' ],
+			[ 'user_id' => 1, 'commission' => 1.6, 'comment' => 'Optional comments 3' ]
+		] );
+
+		$this->assertIsArray( $response );
+		$this->assertTrue( $response2 instanceof \WP_Error );
 	}
 }

@@ -36,13 +36,6 @@ class Data implements ArrayAccess, JsonSerializable {
 	protected $changes = [];
 
 	/**
-	 * Contains a reference to the data store for this class.
-	 *
-	 * @var object
-	 */
-	protected $data_store;
-
-	/**
 	 * This is false until the object is read from the DB.
 	 *
 	 * @var bool
