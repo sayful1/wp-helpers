@@ -16,25 +16,29 @@ defined( 'ABSPATH' ) || exit;
  * Class DatabaseModel
  * A thin layer using wpdb database class form rapid development
  *
- * @method array count_records( array $args = [] )
- * @method int[] create_multiple( array $data )
- * @method bool update_multiple( array $data )
- * @method Data|ArrayObject find_by_id( int $id )
- * @method array|Data[] find( array $args = [] )
- * @method string get_table_name( ?string $table = null )
- * @method string get_foreign_key_constant_name( string $table1, string $table2 )
- * @method QueryBuilder get_query_builder
- * @method bool trash( int $id )
- * @method bool restore( int $id )
- * @method bool delete( int $id )
- * @method mixed batch( string $action, array $data = [] )
- * @method int[] batch_create( array $data = [] )
- * @method bool batch_update( array $data = [] )
- * @method bool batch_trash( array $ids = [] )
- * @method bool batch_restore( array $ids = [] )
- * @method bool batch_delete( array $ids = [] )
- * @method mixed unserialize( $data )
- * @method mixed serialize( $data )
+ * @method static int[] create_multiple( array $data )
+ * @method static bool update_multiple( array $data )
+ * @method static Data|ArrayObject find_by_id( int $id )
+ * @method static Data|ArrayObject find_single( int $id )
+ * @method static array|Data[] find( array $args = [] )
+ * @method static array|Data[] find_multiple( array $args = [] )
+ * @method static bool create( array $data = [] )
+ * @method static bool update( array $data = [] )
+ * @method static bool trash( int $id )
+ * @method static bool restore( int $id )
+ * @method static bool delete( int $id )
+ * @method static mixed batch( string $action, array $data = [] )
+ * @method static int[] batch_create( array $data = [] )
+ * @method static bool batch_update( array $data = [] )
+ * @method static bool batch_trash( array $ids = [] )
+ * @method static bool batch_restore( array $ids = [] )
+ * @method static bool batch_delete( array $ids = [] )
+ * @method static array count_records( array $args = [] )
+ * @method static mixed unserialize( $data )
+ * @method static mixed serialize( $data )
+ * @method static string get_table_name( ?string $table = null )
+ * @method static string get_foreign_key_constant_name( string $table1, string $table2 )
+ * @method static QueryBuilder get_query_builder
  *
  * @package Stackonet\WP\Framework\Abstracts
  */
@@ -126,7 +130,7 @@ abstract class DatabaseModel extends Data {
 	 *
 	 * @return array|static[]
 	 */
-	public function find_multiple( array $args = [] ): array {
+	protected function __find_multiple( array $args = [] ): array {
 		$items = $this->get_data_store()->find_multiple( $args );
 		$data  = [];
 		foreach ( $items as $item ) {
@@ -143,41 +147,10 @@ abstract class DatabaseModel extends Data {
 	 *
 	 * @return ArrayObject|static
 	 */
-	public function find_single( $id ) {
+	protected function __find_single( $id ) {
 		$item = $this->get_data_store()->find_single( $id );
 
 		return $item ? new static( $item ) : new ArrayObject();
-	}
-
-	/**
-	 * Update data
-	 *
-	 * @param array $data The data to be updated.
-	 *
-	 * @return bool
-	 */
-	public function create( array $data = [] ) {
-		if ( empty( $data ) ) {
-			$data = $this->get_data();
-		}
-
-		return $this->get_data_store()->create( $data );
-	}
-
-	/**
-	 * Update data
-	 *
-	 * @param array $data The data to be updated.
-	 *
-	 * @return bool
-	 */
-	public function update( array $data = [] ) {
-		if ( empty( $data ) ) {
-			$this->apply_changes();
-			$data = $this->get_data();
-		}
-
-		return $this->get_data_store()->update( $data );
 	}
 
 	/**
@@ -188,13 +161,14 @@ abstract class DatabaseModel extends Data {
 	 * @return array
 	 */
 	public function read( $data ) {
+		$this->set_object_read();
 		if ( $data instanceof Data ) {
 			return $data->get_data();
 		}
 
 		$data_store = $this->get_data_store();
 
-		if ( is_array( $data ) ) {
+		if ( is_array( $data ) && count( $data ) ) {
 			return $data_store->format_item_for_output( $data );
 		}
 
@@ -242,21 +216,46 @@ abstract class DatabaseModel extends Data {
 	 * @throws BadMethodCallException When method not found.
 	 */
 	public function __call( $name, $arguments ) {
-		if ( method_exists( $this->get_data_store(), $name ) ) {
-			return call_user_func_array( [ $this->get_data_store(), $name ], $arguments );
-		}
-
 		$old_to_new = [
 			'update_multiple' => 'batch_update',
 			'create_multiple' => 'batch_create',
 			'find_by_id'      => 'find_single',
-			'find'            => 'find_many',
+			'find'            => 'find_multiple',
 		];
 
 		if ( isset( $old_to_new[ $name ] ) ) {
-			return call_user_func_array( [ $this, $old_to_new[ $name ] ], $arguments );
+			$name = $old_to_new[ $name ];
+		}
+
+		$data_store = $this->get_data_store();
+		if ( in_array( $name, [ 'create', 'update' ], true ) ) {
+			if ( count( $arguments ) === 0 ) {
+				$this->apply_changes();
+				$arguments = [ $this->get_data() ];
+			}
+		}
+		if ( in_array( $name, [ 'find_multiple', 'find_single' ], true ) ) {
+			$name = '__' . $name;
+
+			return call_user_func_array( [ $this, $name ], $arguments );
+		}
+		if ( method_exists( $data_store, $name ) ) {
+			return call_user_func_array( [ $data_store, $name ], $arguments );
 		}
 
 		throw new BadMethodCallException( "Method {$name} does not exist." );
+	}
+
+	/**
+	 * Handle store method call
+	 *
+	 * @param string      $name The method name.
+	 * @param array|mixed $arguments The method arguments.
+	 *
+	 * @return mixed
+	 * @throws BadMethodCallException When method not found.
+	 */
+	public static function __callStatic( $name, $arguments ) {
+		return ( new static() )->__call( $name, $arguments );
 	}
 }

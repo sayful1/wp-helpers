@@ -85,7 +85,7 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 		$id2 = $this->instance->create( [ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 2' ] );
 		$id3 = $this->instance->create( [ 'commission' => 3.5, 'comment' => 'Optional comments 3' ] );
 
-		$item1 = $this->instance->find_single( $id1 );
+		$item1 = $this->instance::find_single( $id1 );
 		$this->assertEquals( 0.5, $item1->get_prop( 'commission' ) );
 
 		$item1->set_prop( 'commission', 3.33 );
@@ -119,11 +119,11 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 
 		$item1 = $this->instance->find_single( $id1 );
 		$this->assertNull( $item1->get_prop( 'deleted_at' ) );
-		$item1->trash( $id1 );
+		$this->instance::trash( $id1 );
 		$item1 = $this->instance->find_single( $id1 );
 		$this->assertNotNull( $item1->get_prop( 'deleted_at' ) );
 
-		$item1->restore( $id1 );
+		$this->instance::restore( $id1 );
 		$item1 = $this->instance->find_single( $id1 );
 		$this->assertNull( $item1->get_prop( 'deleted_at' ) );
 
@@ -135,7 +135,7 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 		$this->instance->batch_restore( [ $id1, $id2 ] );
 
 		$item2 = $this->instance->find_single( $id2 );
-		$item2->delete( $id2 );
+		$this->instance::delete( $id2 );
 		$item2 = $this->instance->find_single( $id2 );
 		$this->assertTrue( $item2 instanceof \ArrayObject );
 
@@ -168,13 +168,20 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 	}
 
 	public function test_find_multiple() {
-		$response = $this->instance->batch( 'create', [
+		$ids = $this->instance->batch( 'create', [
 			[ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 2' ],
 			[ 'user_id' => 1, 'commission' => 1.6, 'comment' => 'Optional comments 3' ]
 		] );
 
+		foreach ( $ids as $id ) {
+			$this->instance->trash( $id );
+		}
+
 		$data = $this->instance->find_multiple( [ 'user_id' => 1, 'status' => 'trash' ] );
 
+		$this->assertIsArray( $data );
+
+		$data = $this->instance::find_multiple( [ 'user_id' => 1, 'status' => 'trash' ] );
 		$this->assertIsArray( $data );
 	}
 

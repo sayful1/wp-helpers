@@ -83,7 +83,7 @@ class DataStoreBase implements DataStoreInterface {
 	 * Get instance of the store
 	 *
 	 * @param string $table The table name.
-	 * @param array $props The properties.
+	 * @param array  $props The properties.
 	 *
 	 * @return DataStoreBase|DataStoreInterface
 	 */
@@ -162,7 +162,7 @@ class DataStoreBase implements DataStoreInterface {
 		$_data = [];
 		foreach ( $data as $column_name => $naw_value ) {
 			if ( in_array( $column_name, $columns_names, true ) ) {
-				$current_data = isset( $item[ $column_name ] ) ? $item[ $column_name ] : null;
+				$current_data = $item[ $column_name ] ?? null;
 				$temp_data    = $naw_value ?? $current_data;
 				if ( $temp_data !== $current_data ) {
 					$_data[ $column_name ] = $this->serialize( $temp_data );
@@ -255,7 +255,7 @@ class DataStoreBase implements DataStoreInterface {
 	 * Perform batch action
 	 *
 	 * @param string $action Batch action. Example: 'create', 'update', 'delete', 'trash', 'restore'.
-	 * @param array $data The data for batch operation.
+	 * @param array  $data The data for batch operation.
 	 *
 	 * @return mixed
 	 */
@@ -388,10 +388,10 @@ class DataStoreBase implements DataStoreInterface {
 			}
 		}
 
-		$sql = "INSERT INTO `{$table}` (" . implode( ', ', $columns_names ) . ") VALUES \n" . implode( ",\n", $values );
+		$sql  = "INSERT INTO `{$table}` (" . implode( ', ', $columns_names ) . ") VALUES \n" . implode( ",\n", $values );
 		$sql .= "ON DUPLICATE KEY UPDATE \n" . implode( ', ', $update_columns );
 
-		$query = $wpdb->query( $sql );
+		$query = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		// Delete cache.
 		foreach ( $ids as $id ) {
@@ -465,7 +465,7 @@ class DataStoreBase implements DataStoreInterface {
 		$table = $this->get_table_name();
 		$data  = array_map( 'absint', $data );
 
-		$sql = "UPDATE `{$table}` SET `{$this->deleted_at}` = NULL";
+		$sql  = "UPDATE `{$table}` SET `{$this->deleted_at}` = NULL";
 		$sql .= " WHERE {$this->primary_key} IN(" . implode( ',', $data ) . ')';
 
 		$query = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
@@ -523,8 +523,8 @@ class DataStoreBase implements DataStoreInterface {
 		$items     = $this->get_cache( $cache_key );
 		if ( false === $items ) {
 			list( $per_page, $offset ) = $this->get_pagination_and_order_data( $args );
-			$order_by = $this->get_order_by( $args );
-			$status   = $args[ $this->status ] ?? null;
+			$order_by                  = $this->get_order_by( $args );
+			$status                    = $args[ $this->status ] ?? null;
 
 			$query = "SELECT * FROM {$table} WHERE 1=1";
 
@@ -534,7 +534,7 @@ class DataStoreBase implements DataStoreInterface {
 
 			if ( isset( $args[ $this->primary_key . '__in' ] ) && is_array( $args[ $this->primary_key . '__in' ] ) ) {
 				$ids__in = array_map( 'intval', $args[ $this->primary_key . '__in' ] );
-				$query   .= " AND {$this->primary_key} IN(" . implode( ',', $ids__in ) . ')';
+				$query  .= " AND {$this->primary_key} IN(" . implode( ',', $ids__in ) . ')';
 			}
 
 			if ( in_array( $this->deleted_at, static::get_columns_names( $table ), true ) ) {
@@ -704,8 +704,8 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Format item for database
 	 *
-	 * @param array $data User provided data.
-	 * @param array $defaults Default data. Previous data for existing record.
+	 * @param array       $data User provided data.
+	 * @param array       $defaults Default data. Previous data for existing record.
 	 * @param string|null $current_time Current datetime.
 	 *
 	 * @return array
@@ -752,7 +752,7 @@ class DataStoreBase implements DataStoreInterface {
 
 		$format = static::get_data_format_for_db( $this->get_table_name(), $sanitized_data );
 
-		return array( $sanitized_data, $format );
+		return [ $sanitized_data, $format ];
 	}
 
 	/**
@@ -769,11 +769,12 @@ class DataStoreBase implements DataStoreInterface {
 		$per_page = isset( $args['per_page'] ) ? intval( $args['per_page'] ) : $this->per_page;
 		$offset   = $this->calculate_offset( $current_page, $per_page );
 
-		$orderby = isset( $args['orderby'] ) && in_array( $args['orderby'], static::get_columns_names( $this->get_table_name() ) )
+		$columns_names = static::get_columns_names( $this->get_table_name() );
+		$order         = isset( $args['order'] ) && 'ASC' === $args['order'] ? 'ASC' : 'DESC';
+		$orderby       = isset( $args['orderby'] ) && in_array( $args['orderby'], $columns_names, true )
 			? $args['orderby'] : $this->primary_key;
-		$order   = isset( $args['order'] ) && 'ASC' === $args['order'] ? 'ASC' : 'DESC';
 
-		return array( $per_page, $offset, $orderby, $order );
+		return [ $per_page, $offset, $orderby, $order ];
 	}
 
 	/**
