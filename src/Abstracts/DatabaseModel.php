@@ -4,6 +4,7 @@ namespace Stackonet\WP\Framework\Abstracts;
 
 use ArrayObject;
 use BadMethodCallException;
+use Stackonet\WP\Framework\Deprecated\DatabaseModelMethods;
 use Stackonet\WP\Framework\Interfaces\DataStoreInterface;
 use Stackonet\WP\Framework\Supports\QueryBuilder;
 use Stackonet\WP\Framework\Traits\Cacheable;
@@ -39,7 +40,7 @@ defined( 'ABSPATH' ) || exit;
  */
 abstract class DatabaseModel extends Data {
 
-	use Cacheable, TableInfo;
+	use Cacheable, TableInfo, DatabaseModelMethods;
 
 	/**
 	 * Contains a reference to the data store for this class.
@@ -188,30 +189,23 @@ abstract class DatabaseModel extends Data {
 	 */
 	public function read( $data ) {
 		if ( $data instanceof Data ) {
-			return $data->data;
+			return $data->get_data();
+		}
+
+		$data_store = $this->get_data_store();
+
+		if ( is_array( $data ) ) {
+			return $data_store->format_item_for_output( $data );
 		}
 
 		if ( is_numeric( $data ) ) {
-			$item = $this->get_data_store()->read( $data );
-			if ( is_array( $item ) ) {
-				$data = $item;
+			$data = $data_store->find_single( $data );
+			if ( is_array( $data ) ) {
+				return $data;
 			}
 		}
 
-		$table_name = $this->get_table_name();
-		$default    = static::get_default_data( $table_name );
-
-		if ( is_array( $data ) ) {
-			$item = [];
-			foreach ( $default as $column_name => $default_value ) {
-				$temp_data            = $data[ $column_name ] ?? $default_value;
-				$item[ $column_name ] = $this->unserialize( $temp_data );
-			}
-
-			return static::format_data_by_type( $table_name, $item );
-		}
-
-		return $default;
+		return $data_store->get_default_data( $data_store->get_table_name() );
 	}
 
 	/**
@@ -219,7 +213,7 @@ abstract class DatabaseModel extends Data {
 	 *
 	 * @return DataStoreInterface|DataStoreBase
 	 */
-	protected function get_data_store() {
+	public function get_data_store() {
 		if ( property_exists( $this, 'data_store' ) && $this->data_store ) {
 			$store = new $this->data_store();
 			if ( $store instanceof DataStoreBase ) {
@@ -241,7 +235,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Handle store method call
 	 *
-	 * @param string $name The method name.
+	 * @param string      $name The method name.
 	 * @param array|mixed $arguments The method arguments.
 	 *
 	 * @return mixed
@@ -264,70 +258,5 @@ abstract class DatabaseModel extends Data {
 		}
 
 		throw new BadMethodCallException( "Method {$name} does not exist." );
-	}
-
-	/********************************************************************************
-	 * Deprecated Methods
-	 *******************************************************************************/
-
-	/**
-	 * Get pagination data
-	 *
-	 * @param int $total_items Total items.
-	 * @param int $per_page Per page.
-	 * @param int $current_page Current page.
-	 *
-	 * @return array
-	 *
-	 * @deprecated 1.7.0
-	 */
-	public static function get_pagination( $total_items = 0, $per_page = 10, $current_page = 1 ) {
-		_deprecated_function( __METHOD__, '1.7.0' );
-		$per_page = max( intval( $per_page ), 1 );
-
-		return array(
-			'total_items'  => $total_items,
-			'per_page'     => $per_page,
-			'current_page' => $current_page,
-			'total_pages'  => ceil( $total_items / $per_page ),
-		);
-	}
-
-	/**
-	 * Generate pagination metadata
-	 *
-	 * @param array $args Arguments.
-	 *
-	 * @return array
-	 * @deprecated 1.7.0
-	 */
-	public static function getPaginationMetadata( array $args ) {
-		_deprecated_function( __METHOD__, '1.1.5', __CLASS__ . '::get_pagination()' );
-		$data = wp_parse_args(
-			$args,
-			array(
-				'totalCount'     => 0,
-				'limit'          => 10,
-				'currentPage'    => 1,
-				'offset'         => 0,
-				'previousOffset' => null,
-				'nextOffset'     => null,
-				'pageCount'      => 0,
-			)
-		);
-		if ( ! isset( $args['currentPage'] ) && isset( $args['offset'] ) ) {
-			$data['currentPage'] = ( $args['offset'] / $data['limit'] ) + 1;
-		}
-		if ( ! isset( $args['offset'] ) && isset( $args['currentPage'] ) ) {
-			$offset         = ( $data['currentPage'] - 1 ) * $data['limit'];
-			$data['offset'] = max( $offset, 0 );
-		}
-		$previousOffset         = ( $data['currentPage'] - 2 ) * $data['limit'];
-		$nextOffset             = $data['currentPage'] * $data['limit'];
-		$data['previousOffset'] = ( $previousOffset < 0 || $previousOffset > $data['totalCount'] ) ? null : $previousOffset;
-		$data['nextOffset']     = ( $nextOffset < 0 || $nextOffset > $data['totalCount'] ) ? null : $nextOffset;
-		$data['pageCount']      = ceil( $data['totalCount'] / $data['limit'] );
-
-		return $data;
 	}
 }

@@ -22,8 +22,8 @@ trait Cacheable {
 	 * Saves the data to the cache.
 	 *
 	 * @param int|string $key The cache key to use for retrieval later.
-	 * @param mixed      $data The contents to store in the cache.
-	 * @param int        $expire Optional. When to expire the cache contents, in seconds. Default one month.
+	 * @param mixed $data The contents to store in the cache.
+	 * @param int $expire Optional. When to expire the cache contents, in seconds. Default one month.
 	 *
 	 * @return bool True on success, false on failure.
 	 */
@@ -61,6 +61,21 @@ trait Cacheable {
 	public function get_cache_key_for_collection( array $args = [] ): string {
 		$last_changed = wp_cache_get_last_changed( $this->get_cache_group() );
 		$hash         = md5( wp_json_encode( $args ) );
+		$prefix       = $this->get_cache_prefix();
+
+		return "$prefix:$hash:$last_changed";
+	}
+
+	/**
+	 * Get cache key for collection
+	 *
+	 * @param array $args The query arguments.
+	 *
+	 * @return string
+	 */
+	public function get_cache_key_for_count_records( array $args = [] ): string {
+		$last_changed = wp_cache_get_last_changed( $this->get_cache_group() );
+		$hash         = 'count_' . md5( wp_json_encode( $args ) );
 		$prefix       = $this->get_cache_prefix();
 
 		return "$prefix:$hash:$last_changed";

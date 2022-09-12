@@ -422,7 +422,7 @@ class UploadedFile implements UploadedFileInterface {
 			return $this->get_mime_type();
 		}
 
-		throw new BadMethodCallException();
+		throw new BadMethodCallException( sprintf( 'Method %s is not available', $name ) );
 	}
 
 	/**
@@ -440,6 +440,6 @@ class UploadedFile implements UploadedFileInterface {
 			return static::$new_method();
 		}
 
-		throw new BadMethodCallException();
+		throw new BadMethodCallException( sprintf( 'Method %s is not available', $name ) );
 	}
 }

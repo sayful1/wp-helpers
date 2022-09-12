@@ -166,4 +166,41 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 		$this->assertIsArray( $response );
 		$this->assertTrue( $response2 instanceof \WP_Error );
 	}
+
+	public function test_find_multiple() {
+		$response = $this->instance->batch( 'create', [
+			[ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 2' ],
+			[ 'user_id' => 1, 'commission' => 1.6, 'comment' => 'Optional comments 3' ]
+		] );
+
+		$data = $this->instance->find_multiple( [ 'user_id' => 1, 'status' => 'trash' ] );
+
+		$this->assertIsArray( $data );
+	}
+
+	public function test_read() {
+		$id = $this->instance->create( [ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 2' ] );
+
+		$item = $this->instance->get_data_store()->read( $id );
+
+		$this->assertIsArray( $item );
+		$this->assertArrayHasKey( 'user_id', $item );
+
+		$item2 = $this->instance->get_data_store()->read( [ 'in__in' => $id ] );
+		$this->assertIsArray( $item2 );
+		$this->assertIsArray( $item2[0] );
+	}
+
+	public function test_query_builder() {
+		$id = $this->instance->create( [ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 2' ] );
+
+		$orm = $this->instance->get_query_builder();
+		$orm->where( 'user_id', $id );
+		$orm->limit( 1 );
+		$orm->first();
+
+		$dd = sprintf( "SELECT * FROM wp_user_earnings WHERE user_id = %d LIMIT 1 OFFSET 0", $id );
+
+		$this->assertEquals( $dd, $orm->get_query_sql() );
+	}
 }

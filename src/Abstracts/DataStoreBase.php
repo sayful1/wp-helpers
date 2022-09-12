@@ -91,9 +91,9 @@ class DataStoreBase implements DataStoreInterface {
 		$class = new static();
 
 		$class->table = $table;
-		foreach ( $props as $prop ) {
-			if ( property_exists( $class, $prop ) ) {
-				$class->{$prop} = $props[ $prop ];
+		foreach ( $props as $prop_name => $prop_value ) {
+			if ( property_exists( $class, $prop_name ) ) {
+				$class->{$prop_name} = $prop_value;
 			}
 		}
 		$class->primary_key      = static::get_primary_key( $class->get_table_name() );
@@ -124,14 +124,18 @@ class DataStoreBase implements DataStoreInterface {
 	}
 
 	/**
-	 * Method to read a record.
+	 * Method to read record.
 	 *
-	 * @param mixed $data The data to read.
+	 * @param int|array $data Primary key value to get single record. or array of arguments to get multiple records.
 	 *
-	 * @return mixed
+	 * @return array|array[]
 	 */
 	public function read( $data ) {
-		return $this->find_single( $data );
+		if ( is_numeric( $data ) ) {
+			return $this->find_single( $data );
+		}
+
+		return $this->find_multiple( $data );
 	}
 
 	/**
@@ -492,6 +496,11 @@ class DataStoreBase implements DataStoreInterface {
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			$item = $wpdb->get_row( $wpdb->prepare( $sql, $id ), ARRAY_A );
 
+			// prepare item for output.
+			if ( is_array( $item ) ) {
+				$item = $this->format_item_for_output( $item );
+			}
+
 			// Set cache.
 			$this->set_cache( $cache_key, $item );
 		}
@@ -545,6 +554,10 @@ class DataStoreBase implements DataStoreInterface {
 			}
 			$items = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
+			if ( count( $items ) ) {
+				$items = array_map( [ $this, 'format_item_for_output' ], $items );
+			}
+
 			// Set cache for one day.
 			$this->set_cache( $cache_key, $items, DAY_IN_SECONDS );
 		}
@@ -565,40 +578,48 @@ class DataStoreBase implements DataStoreInterface {
 	 * }
 	 */
 	public function count_records( array $args = [] ): array {
-		global $wpdb;
-		$table   = $this->get_table_name();
-		$columns = static::get_columns_names( $table );
+		$cache_key = $this->get_cache_key_for_count_records( $args );
+		$counts    = $this->get_cache( $cache_key );
 
-		$counts = [];
-		$sql    = "SELECT COUNT(*) AS total_records FROM {$table} WHERE 1 = 1";
+		if ( false === $counts ) {
+			global $wpdb;
+			$table   = $this->get_table_name();
+			$columns = static::get_columns_names( $table );
 
-		if ( in_array( $this->deleted_at, $columns, true ) ) {
-			$sql .= " AND {$this->deleted_at} IS NULL";
-			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			$row             = $wpdb->get_row(
-				"SELECT COUNT( * ) AS total_trash FROM {$table} WHERE {$this->deleted_at} IS NOT NULL",
-				ARRAY_A
-			);
-			$counts['trash'] = intval( $row['total_trash'] );
-		}
+			$counts = [];
+			$sql    = "SELECT COUNT(*) AS total_records FROM {$table} WHERE 1 = 1";
 
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-		$row           = $wpdb->get_row( $sql, ARRAY_A );
-		$counts['all'] = isset( $row['total_records'] ) ? intval( $row['total_records'] ) : 0;
-
-		if ( in_array( $this->status, $columns, true ) ) {
-			$query_status = "SELECT {$this->status}, COUNT( * ) AS num_rows FROM {$table} WHERE 1 = 1";
 			if ( in_array( $this->deleted_at, $columns, true ) ) {
-				$query_status .= " AND {$this->deleted_at} IS NULL";
+				$sql .= " AND {$this->deleted_at} IS NULL";
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$row             = $wpdb->get_row(
+					"SELECT COUNT( * ) AS total_trash FROM {$table} WHERE {$this->deleted_at} IS NOT NULL",
+					ARRAY_A
+				);
+				$counts['trash'] = intval( $row['total_trash'] );
 			}
-			$query_status .= " GROUP BY {$this->status}";
 
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-			$results = (array) $wpdb->get_results( $query_status, ARRAY_A );
+			$row           = $wpdb->get_row( $sql, ARRAY_A );
+			$counts['all'] = isset( $row['total_records'] ) ? intval( $row['total_records'] ) : 0;
 
-			foreach ( $results as $row ) {
-				$counts[ $row[ $this->status ] ] = $row['num_rows'];
+			if ( in_array( $this->status, $columns, true ) ) {
+				$query_status = "SELECT {$this->status}, COUNT( * ) AS num_rows FROM {$table} WHERE 1 = 1";
+				if ( in_array( $this->deleted_at, $columns, true ) ) {
+					$query_status .= " AND {$this->deleted_at} IS NULL";
+				}
+				$query_status .= " GROUP BY {$this->status}";
+
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+				$results = (array) $wpdb->get_results( $query_status, ARRAY_A );
+
+				foreach ( $results as $row ) {
+					$counts[ $row[ $this->status ] ] = $row['num_rows'];
+				}
 			}
+
+			// Set cache for one day.
+			$this->set_cache( $cache_key, $counts, DAY_IN_SECONDS );
 		}
 
 		return $counts;
@@ -659,6 +680,25 @@ class DataStoreBase implements DataStoreInterface {
 	 */
 	public function unserialize( $data ) {
 		return maybe_unserialize( $data );
+	}
+
+	/**
+	 * Format data read from database
+	 *
+	 * @param array $raw_data Non formatted data.
+	 *
+	 * @return array
+	 */
+	public function format_item_for_output( array $raw_data ): array {
+		$table_name = $this->get_table_name();
+		$defaults   = static::get_default_data( $table_name );
+		$data       = [];
+		foreach ( $defaults as $column_name => $default_value ) {
+			$temp_data            = $raw_data[ $column_name ] ?? $default_value;
+			$data[ $column_name ] = $this->unserialize( $temp_data );
+		}
+
+		return static::format_data_by_type( $table_name, $data );
 	}
 
 	/**
