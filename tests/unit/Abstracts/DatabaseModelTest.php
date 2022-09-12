@@ -119,8 +119,7 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 
 		$item1 = $this->instance->find_single( $id1 );
 		$this->assertNull( $item1->get_prop( 'deleted_at' ) );
-		$this->instance::trash( $id1 );
-		$item1 = $this->instance->find_single( $id1 );
+		$item1->trash();
 		$this->assertNotNull( $item1->get_prop( 'deleted_at' ) );
 
 		$this->instance::restore( $id1 );

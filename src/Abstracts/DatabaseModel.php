@@ -116,11 +116,12 @@ abstract class DatabaseModel extends Data {
 	 * @param mixed $data The data to be read.
 	 */
 	public function __construct( $data = [] ) {
-		if ( $data ) {
-			$this->data = $this->read( $data );
-		}
 		$this->primary_key      = static::get_primary_key( $this->get_table_name() );
 		$this->primary_key_type = static::get_primary_key_data_format( $this->get_table_name() );
+		if ( $data ) {
+			$this->data = $this->read( $data );
+			$this->set_id( $this->data[ $this->primary_key ] ?? 0 );
+		}
 	}
 
 	/**
@@ -228,16 +229,38 @@ abstract class DatabaseModel extends Data {
 		}
 
 		$data_store = $this->get_data_store();
-		if ( in_array( $name, [ 'create', 'update' ], true ) ) {
-			if ( count( $arguments ) === 0 ) {
+		if ( count( $arguments ) === 0 ) {
+			if ( in_array( $name, [ 'create', 'update' ], true ) ) {
 				$this->apply_changes();
-				$arguments = [ $this->get_data() ];
+
+				return call_user_func_array( [ $data_store, $name ], [ $this->get_data() ] );
+			}
+			if ( 'trash' === $name ) {
+				$this->set_prop( $this->deleted_at, current_time( 'mysql' ) );
+				$this->apply_changes();
+
+				return $data_store->trash( $this->get_id() );
+			}
+			if ( 'restore' === $name ) {
+				$this->set_prop( $this->deleted_at, null );
+				$this->apply_changes();
+
+				return $data_store->restore( $this->get_id() );
+			}
+			if ( 'delete' === $name ) {
+				$this->apply_changes();
+				$response = $data_store->delete( $this->get_id() );
+				if ( $response ) {
+					$this->set_id( 0 );
+				}
+
+				return $response;
 			}
 		}
 		if ( in_array( $name, [ 'find_multiple', 'find_single' ], true ) ) {
 			$name = '__' . $name;
 
-			return call_user_func_array( [ $this, $name ], $arguments );
+			return $this->$name( ...$arguments );
 		}
 		if ( method_exists( $data_store, $name ) ) {
 			return call_user_func_array( [ $data_store, $name ], $arguments );
