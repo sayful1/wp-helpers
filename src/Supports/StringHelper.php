@@ -19,26 +19,18 @@ class StringHelper {
 	 *
 	 * Note: case-sensitive
 	 *
-	 * @param string $haystack
-	 * @param string $needle
+	 * @param string $haystack the string to search in.
+	 * @param string $needle the string to search for.
 	 *
 	 * @return bool
 	 */
-	public static function str_starts_with( $haystack, $needle ) {
-
-		if ( self::multibyte_loaded() ) {
-
-			if ( '' === $needle ) {
-				return true;
-			}
-
-			return 0 === mb_strpos( $haystack, $needle, 0, self::MB_ENCODING );
-		}
-
-		$needle = self::str_to_ascii( $needle );
-
+	public static function str_starts_with( string $haystack, string $needle ): bool {
 		if ( '' === $needle ) {
 			return true;
+		}
+
+		if ( self::multibyte_loaded() ) {
+			return 0 === mb_strpos( $haystack, $needle, 0, self::MB_ENCODING );
 		}
 
 		return 0 === strpos( self::str_to_ascii( $haystack ), self::str_to_ascii( $needle ) );
@@ -49,26 +41,23 @@ class StringHelper {
 	 *
 	 * Note: case-sensitive
 	 *
-	 * @param string $haystack
-	 * @param string $needle
+	 * @param string $haystack the string to search in.
+	 * @param string $needle the string to search for.
 	 *
 	 * @return bool
 	 */
-	public static function str_ends_with( $haystack, $needle ) {
-
+	public static function str_ends_with( string $haystack, string $needle ): bool {
 		if ( '' === $needle ) {
 			return true;
 		}
 
 		if ( self::multibyte_loaded() ) {
-
 			return mb_substr( $haystack, - mb_strlen( $needle, self::MB_ENCODING ), null, self::MB_ENCODING ) === $needle;
 		}
 
-		$haystack = self::str_to_ascii( $haystack );
-		$needle   = self::str_to_ascii( $needle );
+		$needle = self::str_to_ascii( $needle );
 
-		return substr( $haystack, - strlen( $needle ) ) === $needle;
+		return substr( self::str_to_ascii( $haystack ), - strlen( $needle ) ) === $needle;
 	}
 
 	/**
@@ -76,19 +65,17 @@ class StringHelper {
 	 *
 	 * Note: case-sensitive
 	 *
-	 * @param string $haystack
-	 * @param string $needle
+	 * @param string $haystack the string to search in.
+	 * @param string $needle the string to search for.
 	 *
 	 * @return bool
 	 */
-	public static function str_exists( $haystack, $needle ) {
+	public static function str_exists( string $haystack, string $needle ): bool {
+		if ( '' === $needle ) {
+			return false;
+		}
 
 		if ( self::multibyte_loaded() ) {
-
-			if ( '' === $needle ) {
-				return false;
-			}
-
 			return false !== mb_strpos( $haystack, $needle, 0, self::MB_ENCODING );
 		}
 
@@ -98,7 +85,7 @@ class StringHelper {
 			return false;
 		}
 
-		return false !== strpos( self::str_to_ascii( $haystack ), self::str_to_ascii( $needle ) );
+		return false !== strpos( self::str_to_ascii( $haystack ), $needle );
 	}
 
 	/**
@@ -106,17 +93,16 @@ class StringHelper {
 	 * $length. The last characters will be replaced with the $omission string
 	 * for a total length not exceeding $length
 	 *
-	 * @param string $string text to truncate
-	 * @param int    $length total desired length of string, including omission
-	 * @param string $omission omission text, defaults to '...'
+	 * @param string $string text to truncate.
+	 * @param int    $length total desired length of string, including omission.
+	 * @param string $omission omission text, defaults to '...'.
 	 *
 	 * @return string
 	 */
-	public static function str_truncate( $string, $length, $omission = '...' ) {
+	public static function str_truncate( string $string, int $length, string $omission = '...' ): string {
 
 		if ( self::multibyte_loaded() ) {
-
-			// bail if string doesn't need to be truncated
+			// bail if string doesn't need to be truncated.
 			if ( mb_strlen( $string, self::MB_ENCODING ) <= $length ) {
 				return $string;
 			}
@@ -128,7 +114,7 @@ class StringHelper {
 
 		$string = self::str_to_ascii( $string );
 
-		// bail if string doesn't need to be truncated
+		// bail if string doesn't need to be truncated.
 		if ( strlen( $string ) <= $length ) {
 			return $string;
 		}
@@ -144,15 +130,15 @@ class StringHelper {
 	 * safely handle UTF-8. Note this only allows ASCII chars in the range
 	 * 33-126 (newlines/carriage returns are stripped)
 	 *
-	 * @param string $string string to make ASCII
+	 * @param string $string string to make ASCII.
 	 *
 	 * @return string
 	 */
-	public static function str_to_ascii( $string ) {
-		// strip ASCII chars 32 and under
+	public static function str_to_ascii( string $string ): string {
+		// strip ASCII chars 32 and under.
 		$string = filter_var( $string, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_LOW );
 
-		// strip ASCII chars 127 and higher
+		// strip ASCII chars 127 and higher.
 		return filter_var( $string, FILTER_SANITIZE_STRING, FILTER_FLAG_STRIP_HIGH );
 	}
 
@@ -174,7 +160,7 @@ class StringHelper {
 	 *
 	 * pattern definitions from http://www.regular-expressions.info/unicode.html
 	 *
-	 * @param string $string
+	 * @param string $string string to make UTF-8 safe.
 	 *
 	 * @return string
 	 */
@@ -182,7 +168,7 @@ class StringHelper {
 
 		$sane_string = preg_replace( '/[^\p{L}\p{Mn}\p{Mc}\p{Nd}\p{Zs}\p{P}\p{Sm}\p{Sc}]/u', '', $string );
 
-		// preg_replace with the /u modifier can return null or false on failure
+		// preg_replace with the /u modifier can return null or false on failure.
 		return ( is_null( $sane_string ) || false === $sane_string ) ? $string : $sane_string;
 	}
 
@@ -192,7 +178,7 @@ class StringHelper {
 	 *
 	 * @return bool
 	 */
-	protected static function multibyte_loaded() {
+	protected static function multibyte_loaded(): bool {
 		return extension_loaded( 'mbstring' );
 	}
 }

@@ -24,9 +24,9 @@ defined( 'ABSPATH' ) || exit;
  * @method static array|Data[] find_multiple( array $args = [] )
  * @method static bool create( array $data = [] )
  * @method static bool update( array $data = [] )
- * @method static bool trash( int $id )
- * @method static bool restore( int $id )
- * @method static bool delete( int $id )
+ * @method static bool trash( int $id = 0 )
+ * @method static bool restore( int $id = 0 )
+ * @method static bool delete( int $id = 0 )
  * @method static mixed batch( string $action, array $data = [] )
  * @method static int[] batch_create( array $data = [] )
  * @method static bool batch_update( array $data = [] )
@@ -121,6 +121,7 @@ abstract class DatabaseModel extends Data {
 		if ( $data ) {
 			$this->data = $this->read( $data );
 			$this->set_id( $this->data[ $this->primary_key ] ?? 0 );
+			$this->set_object_read();
 		}
 	}
 
@@ -162,7 +163,6 @@ abstract class DatabaseModel extends Data {
 	 * @return array
 	 */
 	public function read( $data ) {
-		$this->set_object_read();
 		if ( $data instanceof Data ) {
 			return $data->get_data();
 		}
@@ -210,7 +210,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Handle store method call
 	 *
-	 * @param string      $name The method name.
+	 * @param string $name The method name.
 	 * @param array|mixed $arguments The method arguments.
 	 *
 	 * @return mixed
@@ -229,12 +229,15 @@ abstract class DatabaseModel extends Data {
 		}
 
 		$data_store = $this->get_data_store();
-		if ( count( $arguments ) === 0 ) {
-			if ( in_array( $name, [ 'create', 'update' ], true ) ) {
-				$this->apply_changes();
-
-				return call_user_func_array( [ $data_store, $name ], [ $this->get_data() ] );
+		if ( in_array( $name, [ 'create', 'update' ], true ) ) {
+			if ( count( $arguments ) > 0 ) {
+				$this->set_props( $arguments[0] );
 			}
+			$this->apply_changes();
+
+			return call_user_func_array( [ $data_store, $name ], [ $this->get_data() ] );
+		}
+		if ( count( $arguments ) === 0 ) {
 			if ( 'trash' === $name ) {
 				$this->set_prop( $this->deleted_at, current_time( 'mysql' ) );
 				$this->apply_changes();
@@ -272,7 +275,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Handle store method call
 	 *
-	 * @param string      $name The method name.
+	 * @param string $name The method name.
 	 * @param array|mixed $arguments The method arguments.
 	 *
 	 * @return mixed

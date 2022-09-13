@@ -23,19 +23,19 @@ class ArrayHelper {
 	 * becomes:
 	 * array( 'item_1' => 'foo', 'item_1.5' => 'w00t', 'item_2' => 'bar' )
 	 *
-	 * @param array  $array array to insert the given element into
-	 * @param string $insert_key key to insert given element after
-	 * @param array  $element element to insert into array
+	 * @param array      $array array to insert the given element into.
+	 * @param string|int $insert_key key to insert given element after.
+	 * @param array      $element element to insert into array.
 	 *
 	 * @return array
 	 */
-	public static function insert_after( array $array, $insert_key, array $element ) {
-		$new_array = array();
+	public static function insert_after( array $array, $insert_key, array $element ): array {
+		$new_array = [];
 
 		foreach ( $array as $key => $value ) {
 
 			$new_array[ $key ] = $value;
-			if ( $insert_key == $key ) {
+			if ( $insert_key === $key ) {
 
 				foreach ( $element as $k => $v ) {
 					$new_array[ $k ] = $v;
@@ -67,18 +67,18 @@ class ArrayHelper {
 	 *      array("id"=>"2","name"=>"Carissa","num"=>"08548596258"),
 	 * )
 	 *
-	 * @param array  $array
-	 * @param string $key
+	 * @param array  $array array to make unique.
+	 * @param string $key key to make unique.
 	 *
 	 * @return array
 	 */
-	public static function unique_multidim_array( array $array, $key ) {
-		$temp_array = array();
+	public static function unique_multidim_array( array $array, string $key ): array {
+		$temp_array = [];
 		$i          = 0;
-		$key_array  = array();
+		$key_array  = [];
 
 		foreach ( $array as $val ) {
-			if ( ! in_array( $val[ $key ], $key_array ) ) {
+			if ( ! in_array( $val[ $key ], $key_array, true ) ) {
 				$key_array[ $i ]  = $val[ $key ];
 				$temp_array[ $i ] = $val;
 			}
@@ -91,31 +91,49 @@ class ArrayHelper {
 	/**
 	 * Computes the difference of arrays
 	 *
-	 * @param array $array1
-	 * @param array $array2
+	 * Sample usage:
+	 *
+	 * given:
+	 * $array1 = [
+	 *      'marcie' => [ 'banana' => 1, 'orange' => 1, 'pasta' => 1 ],
+	 *      'kenji'  => [ 'apple' => 1, 'pie' => 1, 'pasta' => 1 ],
+	 * ];
+	 *
+	 * $array2 = [
+	 *      'marcie' => [ 'banana' => 1, 'orange' => 1 ],
+	 * ];
+	 *
+	 * becomes:
+	 * [
+	 *      'kenji'  => [ 'apple' => 1, 'pie' => 1, 'pasta' => 1 ],
+	 *      'marcie' => [ 'pasta' => 1 ],
+	 * ];
+	 *
+	 * @param array $array1 The array to compare from.
+	 * @param array $array2 An array to compare against.
 	 *
 	 * @return array
 	 */
-	public static function array_diff_recursive( array $array1, array $array2 ) {
-		$aReturn = array();
+	public static function array_diff_recursive( array $array1, array $array2 ): array {
+		$to_return = [];
 
-		foreach ( $array1 as $mKey => $mValue ) {
-			if ( array_key_exists( $mKey, $array2 ) ) {
-				if ( is_array( $mValue ) ) {
-					$aRecursiveDiff = static::array_diff_recursive( $mValue, $array2[ $mKey ] );
-					if ( count( $aRecursiveDiff ) ) {
-						$aReturn[ $mKey ] = $aRecursiveDiff;
+		foreach ( $array1 as $m_key => $m_value ) {
+			if ( array_key_exists( $m_key, $array2 ) ) {
+				if ( is_array( $m_value ) ) {
+					$array_diff_recursive = static::array_diff_recursive( $m_value, $array2[ $m_key ] );
+					if ( count( $array_diff_recursive ) ) {
+						$to_return[ $m_key ] = $array_diff_recursive;
 					}
 				} else {
-					if ( $mValue != $array2[ $mKey ] ) {
-						$aReturn[ $mKey ] = $mValue;
+					if ( $m_value !== $array2[ $m_key ] ) {
+						$to_return[ $m_key ] = $m_value;
 					}
 				}
 			} else {
-				$aReturn[ $mKey ] = $mValue;
+				$to_return[ $m_key ] = $m_value;
 			}
 		}
 
-		return $aReturn;
+		return $to_return;
 	}
 }

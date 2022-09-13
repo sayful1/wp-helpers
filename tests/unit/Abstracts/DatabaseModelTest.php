@@ -63,8 +63,8 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 
 	public function test_create_records() {
 		wp_set_current_user( 1 );
-		$id  = $this->instance->create( [ 'commission' => 1.5, 'comment' => 'Optional comments' ] );
-		$ids = $this->instance->batch_create( [
+		$id  = $this->instance::create( [ 'commission' => 1.5, 'comment' => 'Optional comments' ] );
+		$ids = $this->instance::batch_create( [
 			[ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 2' ],
 			[ 'user_id' => 1, 'commission' => 1.6, 'comment' => 'Optional comments 3' ]
 		] );
@@ -81,32 +81,35 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 
 	public function test_update_record() {
 		wp_set_current_user( 1 );
-		$id1 = $this->instance->create( [ 'user_id' => 1, 'commission' => 0.5, 'comment' => 'Optional comments 1' ] );
-		$id2 = $this->instance->create( [ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 2' ] );
-		$id3 = $this->instance->create( [ 'commission' => 3.5, 'comment' => 'Optional comments 3' ] );
 
-		$item1 = $this->instance::find_single( $id1 );
+		// Create some fake date.
+		$ids = $this->instance::batch_create( [
+			[ 'user_id' => 1, 'commission' => 0.5, 'comment' => 'Optional comments 1' ],
+			[ 'user_id' => 1, 'commission' => 1.6, 'comment' => 'Optional comments 2' ],
+			[ 'commission' => 3.5, 'comment' => 'Optional comments 3' ]
+		] );
+
+		$item1 = $this->instance::find_single( $ids[0] );
 		$this->assertEquals( 0.5, $item1->get_prop( 'commission' ) );
 
 		$item1->set_prop( 'commission', 3.33 );
 		$item1->set_prop( 'user_id', null );
 		$is_updated = $item1->update();
 		$this->assertTrue( $is_updated );
-
-		$item1_updated = $this->instance->find_single( $id1 );
+		$item1_updated = $this->instance::find_single( $ids[0] );
 		$this->assertEquals( 3.33, $item1_updated->get_prop( 'commission' ) );
 
-		$this->instance->batch_update( [
+		$this->instance::batch_update( [
 			[ 'commission' => 4.5, 'comment' => 'This one is not going to update as there is not id.' ],
-			[ 'id' => $id2, 'commission' => 4.5 ],
-			[ 'id' => $id3, 'commission' => 5.5 ],
+			[ 'id' => $ids[1], 'commission' => 4.5 ],
+			[ 'id' => $ids[2], 'commission' => 5.5 ],
 		] );
 
-		$this->assertEquals( 4.5, $this->instance->find_single( $id2 )->get_prop( 'commission' ) );
-		$this->assertEquals( 5.5, $this->instance->find_single( $id3 )->get_prop( 'commission' ) );
+		$this->assertEquals( 4.5, $this->instance->find_single( $ids[1] )->get_prop( 'commission' ) );
+		$this->assertEquals( 5.5, $this->instance->find_single( $ids[2] )->get_prop( 'commission' ) );
 
 		// It cannot update value without id
-		$is_updated = $item1->update( [
+		$is_updated = $this->instance::update( [
 			'commission' => 4.5,
 			'comment'    => 'This one is not going to update as there is not id.'
 		] );
