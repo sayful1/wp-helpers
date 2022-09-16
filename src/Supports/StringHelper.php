@@ -15,6 +15,13 @@ class StringHelper {
 	const MB_ENCODING = 'UTF-8';
 
 	/**
+	 * Whether the mbstring extension is loaded
+	 *
+	 * @var bool|null
+	 */
+	protected static $multibyte_loaded = null;
+
+	/**
 	 * Returns true if the haystack string starts with needle
 	 *
 	 * Note: case-sensitive
@@ -25,12 +32,18 @@ class StringHelper {
 	 * @return bool
 	 */
 	public static function str_starts_with( string $haystack, string $needle ): bool {
-		if ( '' === $needle ) {
-			return true;
+		if ( self::multibyte_loaded() ) {
+			if ( '' === $needle ) {
+				return false;
+			}
+
+			return 0 === mb_strpos( $haystack, $needle, 0, self::MB_ENCODING );
 		}
 
-		if ( self::multibyte_loaded() ) {
-			return 0 === mb_strpos( $haystack, $needle, 0, self::MB_ENCODING );
+		$needle = self::str_to_ascii( $needle );
+
+		if ( '' === $needle ) {
+			return false;
 		}
 
 		return 0 === strpos( self::str_to_ascii( $haystack ), self::str_to_ascii( $needle ) );
@@ -47,11 +60,11 @@ class StringHelper {
 	 * @return bool
 	 */
 	public static function str_ends_with( string $haystack, string $needle ): bool {
-		if ( '' === $needle ) {
-			return true;
-		}
-
 		if ( self::multibyte_loaded() ) {
+			if ( '' === $needle ) {
+				return false;
+			}
+
 			return mb_substr( $haystack, - mb_strlen( $needle, self::MB_ENCODING ), null, self::MB_ENCODING ) === $needle;
 		}
 
@@ -71,11 +84,11 @@ class StringHelper {
 	 * @return bool
 	 */
 	public static function str_exists( string $haystack, string $needle ): bool {
-		if ( '' === $needle ) {
-			return false;
-		}
-
 		if ( self::multibyte_loaded() ) {
+			if ( '' === $needle ) {
+				return false;
+			}
+
 			return false !== mb_strpos( $haystack, $needle, 0, self::MB_ENCODING );
 		}
 
@@ -94,7 +107,7 @@ class StringHelper {
 	 * for a total length not exceeding $length
 	 *
 	 * @param string $string text to truncate.
-	 * @param int    $length total desired length of string, including omission.
+	 * @param int $length total desired length of string, including omission.
 	 * @param string $omission omission text, defaults to '...'.
 	 *
 	 * @return string
@@ -179,6 +192,20 @@ class StringHelper {
 	 * @return bool
 	 */
 	protected static function multibyte_loaded(): bool {
-		return extension_loaded( 'mbstring' );
+		if ( ! is_bool( static::$multibyte_loaded ) ) {
+			static::$multibyte_loaded = extension_loaded( 'mbstring' );
+		}
+
+		return static::$multibyte_loaded;
+	}
+
+	/**
+	 * Manually set the multibyte_loaded value. This is useful for testing
+	 * and should not be used in production code.
+	 *
+	 * @param bool $multibyte_loaded whether or not the multibyte extension is loaded.
+	 */
+	public static function set_multibyte_loaded( bool $multibyte_loaded ): void {
+		static::$multibyte_loaded = $multibyte_loaded;
 	}
 }

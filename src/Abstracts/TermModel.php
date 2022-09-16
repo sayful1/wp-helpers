@@ -151,7 +151,7 @@ abstract class TermModel implements JsonSerializable {
 	 * Get meta data
 	 *
 	 * @param string $key The meta key.
-	 * @param mixed $default The default value.
+	 * @param mixed  $default The default value.
 	 *
 	 * @return mixed
 	 */
@@ -178,7 +178,7 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Get image data.
 	 *
-	 * @param int $image_id The image id.
+	 * @param int    $image_id The image id.
 	 * @param string $size The image size.
 	 *
 	 * @return array|ArrayObject
@@ -218,7 +218,7 @@ abstract class TermModel implements JsonSerializable {
 	 * Method to create a new record
 	 *
 	 * @param string $term The term slug or name to be created.
-	 * @param array $args Optional arguments.
+	 * @param array  $args Optional arguments.
 	 *
 	 * @return array|WP_Error An array containing the `term_id` and `term_taxonomy_id`, WP_Error otherwise.
 	 */
@@ -229,7 +229,7 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Method to create a new record
 	 *
-	 * @param int $term_id The term id to be updated.
+	 * @param int   $term_id The term id to be updated.
 	 * @param array $args Term arguments.
 	 *
 	 * @return array|WP_Error An array containing the `term_id` and `term_taxonomy_id`, WP_Error otherwise.
@@ -276,7 +276,7 @@ abstract class TermModel implements JsonSerializable {
 	 * @param string $menu_name The menu name.
 	 * @param string $name The name in plural form.
 	 * @param string $singular_name The name in singular form.
-	 * @param array $args Additional arguments.
+	 * @param array  $args Additional arguments.
 	 *
 	 * @return array
 	 */
@@ -328,18 +328,17 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Save category fields
 	 *
-	 * @param int $term_id Term ID being saved.
+	 * @param int    $term_id Term ID being saved.
 	 * @param string $taxonomy Taxonomy slug.
 	 * @param string $source Data source. admin-ui or rest-api.
+	 * @param array  $values Data to be saved.
 	 */
 	public static function save_form_fields( int $term_id, string $taxonomy, string $source = 'admin-ui', array $values = [] ) {
 		if ( static::TAXONOMY !== $taxonomy ) {
 			return;
 		}
 
-		if ( empty( $values ) ) {
-			$values = $_REQUEST;
-		}
+		$values = empty( $values ) ? $_POST : $values; // phpcs:ignore WordPress.Security.NonceVerification.Missing
 
 		$default = [
 			'meta_key'          => '',
@@ -353,15 +352,14 @@ abstract class TermModel implements JsonSerializable {
 			$post_key  = ! empty( $field['post_key'] ) ? $field['post_key'] : $field['meta_key'];
 			$field_key = 'rest' === $source ? $field['rest_param'] : $post_key;
 			$meta_key  = $field['meta_key'];
-			if ( empty( $meta_key ) || empty( $field_key ) ) {
-				continue;
-			}
-			$value = $values[ $field_key ] ?? '';
-			if ( isset( $field['sanitize_callback'] ) && is_callable( $field['sanitize_callback'] ) ) {
-				$value = call_user_func( $field['sanitize_callback'], $value );
-			}
+			if ( $meta_key && $field_key ) {
+				$value = $values[ $field_key ] ?? '';
+				if ( isset( $field['sanitize_callback'] ) && is_callable( $field['sanitize_callback'] ) ) {
+					$value = call_user_func( $field['sanitize_callback'], $value );
+				}
 
-			update_term_meta( $term_id, $meta_key, $value );
+				update_term_meta( $term_id, $meta_key, $value );
+			}
 		}
 	}
 
