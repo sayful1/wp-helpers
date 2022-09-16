@@ -6,6 +6,11 @@ use WP_Filesystem_Base;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Class Filesystem
+ *
+ * @package Stackonet\WP\Framework\Supports
+ */
 class Filesystem {
 	/**
 	 * Get WordPress file system
@@ -16,7 +21,7 @@ class Filesystem {
 		global $wp_filesystem;
 		if ( ! $wp_filesystem instanceof WP_Filesystem_Base ) {
 			/**
-			 * you can safely run request_filesystem_credentials() without any issues and don't need
+			 * You can safely run request_filesystem_credentials() without any issues and don't need
 			 * to worry about passing in a URL
 			 */
 			$credentials = request_filesystem_credentials( site_url(), '', false, false, array() );
@@ -47,7 +52,7 @@ class Filesystem {
 	 *
 	 * @return boolean True of the directory is created. False if directory is not created.
 	 */
-	public static function maybe_create_dir( string $dir ) {
+	public static function maybe_create_dir( string $dir ): bool {
 		$filesystem = static::get_filesystem();
 		if ( ! $filesystem instanceof WP_Filesystem_Base ) {
 			return false;
@@ -60,7 +65,11 @@ class Filesystem {
 			}
 
 			// Add an index file for security.
-			$filesystem->put_contents( rtrim( $dir, '/' ) . '/index.php', "<?php\n# Silence is golden." );
+			$filesystem->put_contents(
+				rtrim( $dir, '/' ) . '/index.php',
+				"<?php\n# Silence is golden.",
+				FS_CHMOD_FILE
+			);
 		}
 
 		return true;
@@ -73,7 +82,7 @@ class Filesystem {
 	 *
 	 * @return array
 	 */
-	public static function get_uploads_dir( string $sub_dir ) {
+	public static function get_uploads_dir( string $sub_dir ): array {
 		$upload_dir = wp_get_upload_dir();
 
 		// SSL workaround.
@@ -82,35 +91,35 @@ class Filesystem {
 		}
 
 		// Build the paths.
-		return array(
+		return [
 			'path' => $upload_dir['basedir'] . '/' . $sub_dir,
 			'url'  => $upload_dir['baseurl'] . '/' . $sub_dir,
-		);
+		];
 	}
 
 	/**
 	 * Re-create CSS file
 	 *
-	 * @param string $contents
+	 * @param string $contents CSS contents.
 	 * @param string $file Path to file.
 	 *
-	 * @return bool|array
+	 * @return bool
 	 */
-	public static function update_file_content( string $contents, string $file ) {
+	public static function update_file_content( string $contents, string $file ): bool {
 		$filesystem = static::get_filesystem();
 		if ( ! $filesystem instanceof WP_Filesystem_Base ) {
 			return false;
 		}
 
-		// Create directory if not exists
+		// Create directory if not exists.
 		static::maybe_create_dir( dirname( $file ) );
 
-		// Create file
+		// Create file.
 		if ( ! $filesystem->exists( $file ) ) {
 			$filesystem->touch( $file, time() );
 		}
 
-		return $filesystem->put_contents( $file, $contents, 0644 );
+		return $filesystem->put_contents( $file, $contents, FS_CHMOD_FILE );
 	}
 
 	/**
@@ -118,15 +127,11 @@ class Filesystem {
 	 *
 	 * @return bool
 	 */
-	public static function is_ssl() {
-		if ( is_ssl() ) {
-			return true;
-		} elseif ( 0 === stripos( get_option( 'siteurl' ), 'https://' ) ) {
-			return true;
-		} elseif ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' == $_SERVER['HTTP_X_FORWARDED_PROTO'] ) {
-			return true;
-		}
-
-		return false;
+	public static function is_ssl(): bool {
+		return (
+			is_ssl() ||
+			0 === stripos( get_option( 'siteurl' ), 'https://' ) ||
+			( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' === $_SERVER['HTTP_X_FORWARDED_PROTO'] )
+		);
 	}
 }

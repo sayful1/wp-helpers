@@ -87,8 +87,10 @@ class RestClient {
 
 			return $this;
 		}
-		foreach ( $key as $header => $header_value ) {
-			$this->headers[ $header ] = $header_value;
+		if ( is_array( $key ) ) {
+			foreach ( $key as $header => $header_value ) {
+				$this->headers[ $header ] = $header_value;
+			}
 		}
 
 		return $this;
