@@ -112,7 +112,7 @@ class QueryBuilder {
 
 					$_where .= $this->get_sql_for_where( $_item );
 				}
-				$_where .= ')';
+				$_where  .= ')';
 				$where[] = $_where;
 			}
 		}
@@ -133,13 +133,13 @@ class QueryBuilder {
 			$sql .= "DELETE FROM {$table}";
 		} else {
 			$select = implode( ', ', $this->query['select'] );
-			$sql   .= "SELECT {$select} FROM {$table}";
+			$sql    .= "SELECT {$select} FROM {$table}";
 		}
 
 		if ( count( $this->query['join'] ) ) {
 			foreach ( $this->query['join'] as $join ) {
 				$_alias = ! empty( $join['table_alias'] ) ? "AS {$join['table_alias']}" : '';
-				$sql   .= " {$join['type']} JOIN {$join['table']} {$_alias} ON {$join['first_column']} = {$join['second_column']}";
+				$sql    .= " {$join['type']} JOIN {$join['table']} {$_alias} ON {$join['first_column']} = {$join['second_column']}";
 			}
 		}
 
@@ -193,7 +193,7 @@ class QueryBuilder {
 		}
 		$value = $args[1];
 
-		if ( isset( $args[2] ) && in_array( $args[2], $this->get_compare_operators() ) ) {
+		if ( isset( $args[2] ) && in_array( $args[2], $this->get_compare_operators(), true ) ) {
 			$compare = $args[2];
 		} else {
 			$compare = is_array( $value ) ? 'IN' : '=';
@@ -201,10 +201,10 @@ class QueryBuilder {
 
 		$data_format = $column_info['data_format'];
 
-		if ( $data_format == '%d' ) {
+		if ( '%d' === $data_format ) {
 			$type              = 'integer';
 			$sanitize_callback = 'intval';
-		} elseif ( $data_format == '%f' ) {
+		} elseif ( '%f' === $data_format ) {
 			$type              = 'float';
 			$sanitize_callback = 'floatval';
 		} else {
@@ -247,7 +247,7 @@ class QueryBuilder {
 		$operator = $item['compare'];
 		$sql      = '';
 		if ( is_array( $value ) ) {
-			if ( in_array( $operator, [ 'BETWEEN', 'NOT BETWEEN' ] ) ) {
+			if ( in_array( $operator, [ 'BETWEEN', 'NOT BETWEEN' ], true ) ) {
 				$sql = $wpdb->prepare(
 					"{$item['column']} {$operator} {$item['data_format']} AND {$item['data_format']}",
 					$value[0],
@@ -298,7 +298,7 @@ class QueryBuilder {
 	/**
 	 * Get column name
 	 *
-	 * @param string      $column
+	 * @param string $column
 	 * @param string|null $table_name
 	 *
 	 * @return string[]
@@ -463,8 +463,8 @@ class QueryBuilder {
 	 *
 	 * @param array|string $column
 	 * @param string|array $value
-	 * @param string       $compare
-	 * @param string       $relation
+	 * @param string $compare Operator.
+	 * @param string $relation Query relation. 'AND' or 'OR'.
 	 *
 	 * @return $this
 	 */
@@ -554,7 +554,7 @@ class QueryBuilder {
 	/**
 	 * Set columns to select
 	 *
-	 * @param string[]|string $columns
+	 * @param string[]|string $columns Columns to select.
 	 *
 	 * @return $this
 	 */
@@ -574,17 +574,18 @@ class QueryBuilder {
 	/**
 	 * Add joint table
 	 *
-	 * @param string $table
-	 * @param string $first_column
-	 * @param string $second_column
-	 * @param string $type
+	 * @param string $table Table name.
+	 * @param string $first_column First table column.
+	 * @param string $second_column Second table column.
+	 * @param string $type Join type.
 	 *
 	 * @return static
 	 */
 	public function join( string $table, string $first_column, string $second_column, string $type = 'INNER' ): QueryBuilder {
-		$type                             = in_array( strtoupper( $type ), [ 'LEFT', 'RIGHT', 'INNER' ] ) ? $type : 'INNER';
 		list( $table_name, $table_alias ) = $this->get_table_name( $table );
-		$table_info                       = static::get_table_info( $table_name );
+
+		$type       = in_array( strtoupper( $type ), [ 'LEFT', 'RIGHT', 'INNER' ], true ) ? $type : 'INNER';
+		$table_info = static::get_table_info( $table_name );
 		if ( ! empty( $table_info ) ) {
 			$this->query['join'][] = [
 				'table'         => $table_name,

@@ -73,21 +73,21 @@ class EmailTemplateBase {
 	 *
 	 * @var string
 	 */
-	protected $fontFamily = 'font-family: Arial, \'Helvetica Neue\', Helvetica, Roboto, sans-serif;';
+	protected $font_family = 'font-family: Arial, \'Helvetica Neue\', Helvetica, Roboto, sans-serif;';
 
 	/**
 	 * Get style
 	 *
-	 * @param string $key
+	 * @param string $key Style key.
 	 *
 	 * @return string
 	 */
 	public function get_style( string $key ): string {
 		if ( 'font-family' === $key ) {
-			return $this->fontFamily;
+			return $this->font_family;
 		}
 
-		return isset( $this->style[ $key ] ) ? $this->style[ $key ] : '';
+		return $this->style[ $key ] ?? '';
 	}
 
 	/**
@@ -153,8 +153,8 @@ class EmailTemplateBase {
 	 */
 	public function get_logo_html(): string {
 		return sprintf(
-			"<a style='%s' target='_blank' href='%s'>%s</a>",
-			$this->fontFamily . $this->style['email-masthead_name'],
+			"<a style=\"%s\" target='_blank' href='%s'>%s</a>",
+			$this->font_family . $this->style['email-masthead_name'],
 			$this->get_home_url(),
 			$this->get_logo()
 		);
@@ -163,7 +163,7 @@ class EmailTemplateBase {
 	/**
 	 * Set logo
 	 *
-	 * @param string $logo
+	 * @param string $logo Logo image url.
 	 *
 	 * @return static
 	 */
@@ -176,6 +176,8 @@ class EmailTemplateBase {
 	}
 
 	/**
+	 * Is box design
+	 *
 	 * @return bool
 	 */
 	public function is_box_mode(): bool {
@@ -183,12 +185,14 @@ class EmailTemplateBase {
 	}
 
 	/**
-	 * @param bool $box_mode
+	 * Set box design
+	 *
+	 * @param bool $box_mode Box mode.
 	 *
 	 * @return static
 	 */
 	public function set_box_mode( bool $box_mode ): self {
-		$this->box_mode = (bool) $box_mode;
+		$this->box_mode = $box_mode;
 
 		return $this;
 	}
@@ -196,7 +200,7 @@ class EmailTemplateBase {
 	/**
 	 * Make style unique
 	 *
-	 * @param array|string $styles
+	 * @param array|string $styles CSS styles.
 	 *
 	 * @return string
 	 */
@@ -210,7 +214,7 @@ class EmailTemplateBase {
 			$style    = explode( ':', $_style );
 			$property = isset( $style[0] ) ? trim( $style[0] ) : '';
 			$value    = isset( $style[1] ) ? trim( $style[1] ) : '';
-			if ( $property == '' || $value == '' ) {
+			if ( '' === $property || '' === $value ) {
 				continue;
 			}
 			$_styles[ $property ] = $value;
@@ -243,7 +247,7 @@ class EmailTemplateBase {
 
 		return sprintf(
 			"&copy; %s <a style='%s' href='%s' target='_blank'>%s</a>. All rights reserved.",
-			date( 'Y' ),
+			gmdate( 'Y' ),
 			$this->style['anchor'],
 			esc_url( home_url( '/' ) ),
 			$this->get_blogname()
@@ -253,7 +257,7 @@ class EmailTemplateBase {
 	/**
 	 * Set footer text
 	 *
-	 * @param string $footer_text
+	 * @param string $footer_text Footer text.
 	 *
 	 * @return self
 	 */
@@ -266,21 +270,35 @@ class EmailTemplateBase {
 	/**
 	 * Get paragraph
 	 *
-	 * @param string $text
-	 * @param string $style
+	 * @param string $text Paragraph text.
+	 * @param string $style Paragraph style.
 	 *
 	 * @return string
 	 */
-	public function add_paragraph( string $text, $style = '' ): string {
+	public function add_paragraph( string $text, string $style = '' ): string {
 		$style = $this->get_unique_styles( $this->get_style( 'paragraph' ) . $style );
 
 		return sprintf( "<p style='%s'>%s</p>", $style, $text ) . PHP_EOL;
 	}
 
 	/**
+	 * Get paragraph
+	 *
+	 * @param string $text span element text.
+	 * @param string $style span element style.
+	 *
+	 * @return string
+	 */
+	public function add_span( string $text, string $style = '' ): string {
+		$style = $this->get_unique_styles( $this->get_style( 'paragraph-sub' ) . $style );
+
+		return sprintf( "<span style='%s'>%s</span>", $style, $text ) . PHP_EOL;
+	}
+
+	/**
 	 * Section start
 	 *
-	 * @param array $args
+	 * @param array $args Section arguments.
 	 *
 	 * @return string
 	 */
@@ -295,7 +313,7 @@ class EmailTemplateBase {
 		$width         = intval( $styles['content-width'] );
 		$style_section = 'width:100%;margin:0;padding:0;background-color:#ffffff;' . $styles['section-style'];
 		$style_table   = 'width: auto;max-width: ' . $width . 'px;margin: 0 auto;padding: 0;' . $styles['table-style'];
-		$style_cell    = $this->fontFamily . $styles['cell-style'];
+		$style_cell    = $this->font_family . $styles['cell-style'];
 
 		$html  = '<tr class="email-section">';
 		$html .= '<td style="' . $this->get_unique_styles( $style_section ) . '">';

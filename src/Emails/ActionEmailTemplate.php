@@ -287,7 +287,7 @@ class ActionEmailTemplate extends EmailTemplateBase {
 		$html .= sprintf(
 			'<a href="%s" class="button" target="_blank" style="%s">%s</a>',
 			$this->action_url,
-			$this->fontFamily . $this->style['button'] . $this->style[ $actionColor ],
+			$this->font_family . $this->style['button'] . $this->style[ $actionColor ],
 			$this->action_text
 		);
 		$html .= '</td></tr>';
@@ -304,7 +304,7 @@ class ActionEmailTemplate extends EmailTemplateBase {
 		if ( ! ( $this->has_action() && $this->show_sub_copy ) ) {
 			return $html;
 		}
-		$html .= '<table style="' . $this->style['body_sub'] . '"><tr><td style="' . $this->fontFamily . '">';
+		$html .= '<table style="' . $this->style['body_sub'] . '"><tr><td style="' . $this->font_family . '">';
 
 		$html .= sprintf(
 			'<p style="%s">If you’re having trouble clicking the "%s" button, copy and paste the URL below into your web browser:</p>',

@@ -1,3 +1,13 @@
+#### 1.8.0
+
+* Add test for RestClient and Filesystem class.
+* Update string helper test.
+* Add some test for ArrayHelper and StringHelper class.
+* Update method call for 'trash', 'restore' and 'delete' for DatabaseModel class.
+* Add support for static call for DatabaseModel class.
+* Update cache option for database count_records method.
+* Add DataStoreBase class.
+
 #### 1.7.0
 
 * Update `Stackonet\WP\Framework\Abstracts\Data` class fixing PHP 8 compatibility.
