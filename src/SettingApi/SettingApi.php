@@ -9,14 +9,8 @@ use WP_Error;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Very simple WordPress Settings API wrapper class
- *
- * WordPress Option Page Wrapper class that implements WordPress Settings API and
- * give you easy way to create multi tabs admin menu and
- * add setting fields with build in validation.
- *
- * @author  Sayful Islam <sayful.islam001@gmail.com>
- * @link    https://sayfulislam.com
+ * Setting API class
+ * This class is used to get, set, update settings panels, sections, fields
  */
 class SettingApi {
 	/**
@@ -28,25 +22,35 @@ class SettingApi {
 
 	/**
 	 * Settings options array
+	 *
+	 * @var array
 	 */
 	protected $options = [];
 
 	/**
 	 * Settings menu fields array
+	 *
+	 * @var array
 	 */
 	protected $menu_fields = [];
 
 	/**
 	 * Settings fields array
+	 *
+	 * @var array
 	 */
 	protected $fields = [];
 
 	/**
 	 * Settings tabs array
+	 *
+	 * @var array
 	 */
 	protected $panels = [];
 
 	/**
+	 * Settings sections array
+	 *
 	 * @var array
 	 */
 	protected $sections = [];
@@ -59,6 +63,8 @@ class SettingApi {
 	protected $option_name = null;
 
 	/**
+	 * The only one instance of the class can be loaded
+	 *
 	 * @return self
 	 */
 	public static function init() {
@@ -74,7 +80,16 @@ class SettingApi {
 	 *
 	 * This method is accessible outside the class for creating menu
 	 *
-	 * @param array $menu_fields
+	 * @param array $menu_fields {
+	 *    An array of menu fields.
+	 *
+	 * @type string $page_title The text to be displayed in the title tags of the page when the menu is selected.
+	 * @type string $menu_title The text to be used for the menu.
+	 * @type string $menu_slug The slug name to refer to this menu by (should be unique for this menu).
+	 * @type string $capability The capability required for this menu to be displayed to the user.
+	 * @type string $parent_slug The slug name for the parent menu (or the file name of a standard WordPress admin page).
+	 * @type string $option_name The option name for the menu.
+	 * }
 	 *
 	 * @return WP_Error|SettingApi
 	 */
@@ -93,7 +108,9 @@ class SettingApi {
 	}
 
 	/**
-	 * @param array $input
+	 * Sanitize the option value
+	 *
+	 * @param array $input User raw input.
 	 *
 	 * @return array
 	 */
@@ -120,7 +137,7 @@ class SettingApi {
 				continue;
 			}
 
-			if ( 'checkbox' == $type ) {
+			if ( 'checkbox' === $type ) {
 				$output_array[ $key ] = Validate::checked( $value ) ? 1 : 0;
 				continue;
 			}
@@ -139,8 +156,8 @@ class SettingApi {
 	/**
 	 * Validate the option's value
 	 *
-	 * @param mixed $value
-	 * @param string $type
+	 * @param mixed  $value The value to validate.
+	 * @param string $type The type of the value.
 	 *
 	 * @return string|numeric
 	 */
@@ -148,19 +165,14 @@ class SettingApi {
 		switch ( $type ) {
 			case 'number':
 				return Sanitize::number( $value );
-
 			case 'url':
 				return Sanitize::url( $value );
-
 			case 'email':
 				return Sanitize::email( $value );
-
 			case 'date':
 				return Sanitize::date( $value );
-
 			case 'textarea':
 				return Sanitize::textarea( $value );
-
 			case 'text':
 				return Sanitize::text( $value );
 			default:
@@ -201,8 +213,8 @@ class SettingApi {
 	/**
 	 * Update options
 	 *
-	 * @param array $options
-	 * @param bool $sanitize
+	 * @param array $options The options to update.
+	 * @param bool  $sanitize Whether to sanitize the options or not.
 	 */
 	public function update_options( array $options, bool $sanitize = true ) {
 		if ( $sanitize ) {
@@ -217,18 +229,16 @@ class SettingApi {
 	 * @return array
 	 */
 	public function get_panels(): array {
-		$panels = apply_filters( 'stackonet/settings/panels', $this->panels );
+		// Sort by priority.
+		usort( $this->panels, [ $this, 'sort_by_priority' ] );
 
-		// Sort by priority
-		usort( $panels, [ $this, 'sort_by_priority' ] );
-
-		return $panels;
+		return $this->panels;
 	}
 
 	/**
 	 * Set panels
 	 *
-	 * @param array $panels
+	 * @param array $panels The panels to set.
 	 *
 	 * @return self
 	 */
@@ -246,18 +256,16 @@ class SettingApi {
 	 * @return array
 	 */
 	public function get_sections(): array {
-		$sections = apply_filters( 'stackonet/settings/sections', $this->sections );
+		// Sort by priority.
+		usort( $this->sections, [ $this, 'sort_by_priority' ] );
 
-		// Sort by priority
-		usort( $sections, [ $this, 'sort_by_priority' ] );
-
-		return $sections;
+		return $this->sections;
 	}
 
 	/**
 	 * Set sections
 	 *
-	 * @param array $sections
+	 * @param array $sections The sections to set.
 	 *
 	 * @return self
 	 */
@@ -275,18 +283,16 @@ class SettingApi {
 	 * @return array
 	 */
 	public function get_fields(): array {
-		$fields = apply_filters( 'stackonet/settings/fields', $this->fields );
+		// Sort by priority.
+		usort( $this->fields, [ $this, 'sort_by_priority' ] );
 
-		// Sort by priority
-		usort( $fields, [ $this, 'sort_by_priority' ] );
-
-		return $fields;
+		return $this->fields;
 	}
 
 	/**
 	 * Set fields
 	 *
-	 * @param array $fields
+	 * @param array $fields The fields to set.
 	 *
 	 * @return self
 	 */
@@ -303,7 +309,7 @@ class SettingApi {
 	 *
 	 * This method is accessible outside the class for creating page tab
 	 *
-	 * @param array $panel
+	 * @param array $panel The panel to add.
 	 *
 	 * @return self
 	 */
@@ -326,7 +332,7 @@ class SettingApi {
 	/**
 	 * Add Setting page section
 	 *
-	 * @param array $section
+	 * @param array $section The section to add.
 	 *
 	 * @return self
 	 */
@@ -351,7 +357,7 @@ class SettingApi {
 	 * Add new settings field
 	 * This method is accessible outside the class for creating settings field
 	 *
-	 * @param array $field
+	 * @param array $field The field to add.
 	 *
 	 * @return self
 	 */
@@ -376,12 +382,16 @@ class SettingApi {
 	/**
 	 * Sort array by its priority field
 	 *
-	 * @param array $array1
-	 * @param array $array2
+	 * @param array $array1 The first array to compare.
+	 * @param array $array2 The second array to compare.
 	 *
 	 * @return mixed
 	 */
 	public function sort_by_priority( array $array1, array $array2 ) {
+		// Sort by priority. if priority is same, sort by title.
+		if ( $array1['priority'] === $array2['priority'] ) {
+			return strcmp( $array1['title'], $array2['title'] );
+		}
 		return $array1['priority'] - $array2['priority'];
 	}
 
@@ -399,7 +409,9 @@ class SettingApi {
 	}
 
 	/**
-	 * @param string $option_name
+	 * Set option name
+	 *
+	 * @param string $option_name The option name to set.
 	 *
 	 * @return SettingApi
 	 */

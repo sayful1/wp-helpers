@@ -125,5 +125,7 @@ class SettingPage {
 				'sanitize_callback' => 'sanitize_text_field',
 			)
 		);
+
+		do_action( 'stackonet/settings/after_register', $setting );
 	}
 }

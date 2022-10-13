@@ -458,6 +458,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	 *
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize() {
 		return $this->to_array();
 	}

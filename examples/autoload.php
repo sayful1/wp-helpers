@@ -2,6 +2,8 @@
 
 use Stackonet\WP\Examples\Faqs\FaqManager;
 use Stackonet\WP\Examples\Testimonial\TestimonialManager;
+use Stackonet\WP\Examples\WordPressCore\MailTrap;
+use Stackonet\WP\Examples\WordPressCore\SettingPage;
 
 // If this file is called directly, abort.
 defined( 'ABSPATH' ) || exit;
@@ -14,8 +16,8 @@ spl_autoload_register(
 		// does the class use the namespace prefix?
 		$len = strlen( $prefix );
 		if ( strncmp( $prefix, $class, $len ) !== 0 ) {
-			  // no, move to the next registered autoloader
-			  return;
+			// no, move to the next registered autoloader
+			return;
 		}
 
 		// get the relative class name
@@ -38,5 +40,7 @@ add_action(
 	function () {
 		FaqManager::init();
 		TestimonialManager::init();
+		MailTrap::init();
+		SettingPage::init()->add_settings_page();
 	}
 );

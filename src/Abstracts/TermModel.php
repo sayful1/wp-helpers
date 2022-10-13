@@ -368,6 +368,7 @@ abstract class TermModel implements JsonSerializable {
 	 *
 	 * @inheritDoc
 	 */
+	#[\ReturnTypeWillChange]
 	public function jsonSerialize() {
 		return $this->to_array();
 	}

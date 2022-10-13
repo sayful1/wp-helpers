@@ -6,6 +6,16 @@ use Stackonet\WP\Framework\Interfaces\FormBuilderInterface;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * Very simple WordPress Settings API wrapper class
+ *
+ * WordPress Option Page Wrapper class that implements WordPress Settings API and
+ * give you easy way to create multi tabs admin menu and
+ * add setting fields with build in validation.
+ *
+ * @author  Sayful Islam <sayful.islam001@gmail.com>
+ * @link    https://sayfulislam.com
+ */
 class DefaultSettingApi extends SettingApi {
 
 	/**
@@ -16,6 +26,8 @@ class DefaultSettingApi extends SettingApi {
 	protected $action = 'options.php';
 
 	/**
+	 * The form builder to build the html form
+	 *
 	 * @var FormBuilder
 	 */
 	protected $form_builder;
@@ -34,13 +46,19 @@ class DefaultSettingApi extends SettingApi {
 	 * Register setting and its sanitize callback.
 	 */
 	public function register_setting() {
-		register_setting( $this->get_option_name(), $this->get_option_name(), [ $this, 'sanitize_callback' ] );
+		register_setting(
+			$this->get_option_name(),
+			$this->get_option_name(),
+			[
+				'sanitize_callback' => [ $this, 'sanitize_callback' ],
+			]
+		);
 	}
 
 	/**
 	 * Sanitize each setting field as needed
 	 *
-	 * @param array|mixed $input Contains all settings fields as array keys
+	 * @param array|mixed $input Contains all settings fields as array keys.
 	 *
 	 * @return array
 	 */
@@ -83,8 +101,9 @@ class DefaultSettingApi extends SettingApi {
 		$panel        = '';
 		$sections     = [];
 		if ( $this->has_panels() ) {
-			$panels_ids   = wp_list_pluck( $this->get_panels(), 'id' );
-			$panel        = isset( $_GET['tab'] ) && in_array( $_GET['tab'], $panels_ids ) ? $_GET['tab'] : $panels_ids[0];
+			$panels_ids = wp_list_pluck( $this->get_panels(), 'id' );
+			// phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$panel        = isset( $_GET['tab'] ) && in_array( $_GET['tab'], $panels_ids, true ) ? $_GET['tab'] : $panels_ids[0];
 			$sections     = $this->get_sections_by_panel( $panel );
 			$has_sections = count( $sections ) > 0;
 		}
@@ -97,15 +116,17 @@ class DefaultSettingApi extends SettingApi {
 			<?php } ?>
 			<?php
 			if ( $this->has_panels() ) {
-				echo $this->option_page_tabs();
+				echo $this->option_page_tabs(); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 			}
 			?>
 			<form autocomplete="off" method="POST" action="<?php echo esc_attr( $this->action ); ?>">
 				<?php
 				settings_fields( $option_name );
 				if ( $has_sections ) {
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					echo $this->get_fields_html_by_section( $sections, $panel );
 				} else {
+					// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					echo $this->get_form_builder()->get_fields_html( $this->filter_fields_by_tab(), $option_name, $options );
 				}
 				submit_button();
@@ -113,14 +134,15 @@ class DefaultSettingApi extends SettingApi {
 			</form>
 		</div>
 		<?php
+		// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo ob_get_clean();
 	}
 
 	/**
 	 * Get fields HTML by section
 	 *
-	 * @param array       $sections Array of section
-	 * @param string|null $panel Panel id
+	 * @param array       $sections Array of section.
+	 * @param string|null $panel Panel id.
 	 *
 	 * @return string
 	 */
@@ -137,8 +159,8 @@ class DefaultSettingApi extends SettingApi {
 				$table .= '<p class="description">' . esc_js( $section['description'] ) . '</p>';
 			}
 
-			$fieldsArray = $this->get_fields_by( $section['id'], $panel );
-			$table      .= $this->get_form_builder()->get_fields_html( $fieldsArray, $option_name, $options );
+			$fields_by = $this->get_fields_by( $section['id'], $panel );
+			$table    .= $this->get_form_builder()->get_fields_html( $fields_by, $option_name, $options );
 		}
 
 		return $table;
@@ -155,7 +177,7 @@ class DefaultSettingApi extends SettingApi {
 			return '';
 		}
 
-		$current_tab = $_GET['tab'] ?? $panels[0]['id'];
+		$current_tab = $_GET['tab'] ?? $panels[0]['id']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		$page        = $this->menu_fields['menu_slug'];
 
 		$html = '<h2 class="nav-tab-wrapper wp-clearfix">';
@@ -180,7 +202,7 @@ class DefaultSettingApi extends SettingApi {
 	/**
 	 * Filter settings fields by page tab
 	 *
-	 * @param string|null $current_tab
+	 * @param string|null $current_tab Current tab.
 	 *
 	 * @return array
 	 */
@@ -191,7 +213,7 @@ class DefaultSettingApi extends SettingApi {
 
 		if ( empty( $current_tab ) ) {
 			$panels      = $this->get_panels();
-			$current_tab = $_GET['tab'] ?? $panels[0]['id'];
+			$current_tab = $_GET['tab'] ?? $panels[0]['id']; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 
 		return $this->get_fields_by_panel( $current_tab );
@@ -200,7 +222,7 @@ class DefaultSettingApi extends SettingApi {
 	/**
 	 * Add new field
 	 *
-	 * @param array $field
+	 * @param array $field Field.
 	 */
 	public function add_field( array $field ) {
 		if ( empty( $field['title'] ) && ! empty( $field['name'] ) ) {
@@ -239,7 +261,7 @@ class DefaultSettingApi extends SettingApi {
 	/**
 	 * Get sections for current panel
 	 *
-	 * @param string $panel
+	 * @param string $panel Panel id.
 	 *
 	 * @return array
 	 */
@@ -250,7 +272,7 @@ class DefaultSettingApi extends SettingApi {
 
 		$panels = [];
 		foreach ( $this->get_sections() as $section ) {
-			if ( $section['panel'] == $panel ) {
+			if ( $section['panel'] === $panel ) {
 				$panels[] = $section;
 			}
 		}
@@ -261,8 +283,8 @@ class DefaultSettingApi extends SettingApi {
 	/**
 	 * Get field for current section
 	 *
-	 * @param string|null $section
-	 * @param string|null $panel
+	 * @param string|null $section Section id.
+	 * @param string|null $panel Panel id.
 	 *
 	 * @return array
 	 */
@@ -274,8 +296,8 @@ class DefaultSettingApi extends SettingApi {
 		$fields = [];
 		foreach ( $this->get_fields() as $field ) {
 			if (
-				( isset( $field['section'] ) && $field['section'] == $section ) ||
-				( ! empty( $panel ) && isset( $field['panel'] ) && $panel == $field['panel'] )
+				( isset( $field['section'] ) && $field['section'] === $section ) ||
+				( ! empty( $panel ) && isset( $field['panel'] ) && $panel === $field['panel'] )
 			) {
 				$fields[ $field['id'] ] = $field;
 			}
@@ -287,7 +309,7 @@ class DefaultSettingApi extends SettingApi {
 	/**
 	 * Filter settings fields by page tab
 	 *
-	 * @param string|null $panel
+	 * @param string|null $panel Panel id.
 	 *
 	 * @return array
 	 */
@@ -308,6 +330,8 @@ class DefaultSettingApi extends SettingApi {
 	}
 
 	/**
+	 * Get form builder class
+	 *
 	 * @return FormBuilderInterface
 	 */
 	public function get_form_builder(): FormBuilderInterface {
@@ -319,7 +343,9 @@ class DefaultSettingApi extends SettingApi {
 	}
 
 	/**
-	 * @param FormBuilderInterface $form_builder
+	 * Set form builder class
+	 *
+	 * @param FormBuilderInterface $form_builder Form builder.
 	 */
 	public function set_form_builder( FormBuilderInterface $form_builder ): void {
 		$this->form_builder = $form_builder;
