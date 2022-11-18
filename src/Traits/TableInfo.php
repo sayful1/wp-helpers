@@ -104,7 +104,7 @@ trait TableInfo {
 	 * Format data by type
 	 *
 	 * @param string $table The table name.
-	 * @param array $data The data that is going to insert into database.
+	 * @param array  $data The data that is going to insert into database.
 	 *
 	 * @return array
 	 */
@@ -132,7 +132,7 @@ trait TableInfo {
 	 * Get data format for db
 	 *
 	 * @param string $table The table name.
-	 * @param array $data The data that is going to insert into database.
+	 * @param array  $data The data that is going to insert into database.
 	 *
 	 * @return array
 	 */

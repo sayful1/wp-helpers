@@ -112,7 +112,7 @@ abstract class BackgroundProcess extends AsyncRequest {
 	 * Update queue
 	 *
 	 * @param string $key Key.
-	 * @param array $data Data.
+	 * @param array  $data Data.
 	 *
 	 * @return $this
 	 */

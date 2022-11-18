@@ -18,7 +18,7 @@ interface CollectionInterface extends ArrayAccess, Countable, IteratorAggregate 
 	/**
 	 * Does this collection have a given key?
 	 *
-	 * @param string $key The data key
+	 * @param string $key The data key.
 	 *
 	 * @return bool
 	 */
@@ -27,16 +27,16 @@ interface CollectionInterface extends ArrayAccess, Countable, IteratorAggregate 
 	/**
 	 * Set collection item
 	 *
-	 * @param string $key The data key
-	 * @param mixed  $value The data value
+	 * @param string $key The data key.
+	 * @param mixed  $value The data value.
 	 */
 	public function set( string $key, $value );
 
 	/**
 	 * Get collection item for key
 	 *
-	 * @param string $key The data key
-	 * @param mixed  $default The default value to return if data key does not exist
+	 * @param string $key The data key.
+	 * @param mixed  $default The default value to return if data key does not exist.
 	 *
 	 * @return mixed The key's value, or the default value
 	 */
@@ -45,7 +45,7 @@ interface CollectionInterface extends ArrayAccess, Countable, IteratorAggregate 
 	/**
 	 * Add item to collection, replacing existing items with the same data key
 	 *
-	 * @param array $items Key-value array of data to append to this collection
+	 * @param array $items Key-value array of data to append to this collection.
 	 */
 	public function replace( array $items );
 
@@ -59,7 +59,7 @@ interface CollectionInterface extends ArrayAccess, Countable, IteratorAggregate 
 	/**
 	 * Remove item from collection
 	 *
-	 * @param string $key The data key
+	 * @param string $key The data key.
 	 */
 	public function remove( string $key );
 

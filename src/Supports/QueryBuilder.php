@@ -112,7 +112,7 @@ class QueryBuilder {
 
 					$_where .= $this->get_sql_for_where( $_item );
 				}
-				$_where  .= ')';
+				$_where .= ')';
 				$where[] = $_where;
 			}
 		}
@@ -133,13 +133,13 @@ class QueryBuilder {
 			$sql .= "DELETE FROM {$table}";
 		} else {
 			$select = implode( ', ', $this->query['select'] );
-			$sql    .= "SELECT {$select} FROM {$table}";
+			$sql   .= "SELECT {$select} FROM {$table}";
 		}
 
 		if ( count( $this->query['join'] ) ) {
 			foreach ( $this->query['join'] as $join ) {
 				$_alias = ! empty( $join['table_alias'] ) ? "AS {$join['table_alias']}" : '';
-				$sql    .= " {$join['type']} JOIN {$join['table']} {$_alias} ON {$join['first_column']} = {$join['second_column']}";
+				$sql   .= " {$join['type']} JOIN {$join['table']} {$_alias} ON {$join['first_column']} = {$join['second_column']}";
 			}
 		}
 
@@ -298,7 +298,7 @@ class QueryBuilder {
 	/**
 	 * Get column name
 	 *
-	 * @param string $column
+	 * @param string      $column
 	 * @param string|null $table_name
 	 *
 	 * @return string[]
@@ -463,8 +463,8 @@ class QueryBuilder {
 	 *
 	 * @param array|string $column
 	 * @param string|array $value
-	 * @param string $compare Operator.
-	 * @param string $relation Query relation. 'AND' or 'OR'.
+	 * @param string       $compare Operator.
+	 * @param string       $relation Query relation. 'AND' or 'OR'.
 	 *
 	 * @return $this
 	 */

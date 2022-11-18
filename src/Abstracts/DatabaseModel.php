@@ -210,7 +210,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Handle store method call
 	 *
-	 * @param string $name The method name.
+	 * @param string      $name The method name.
 	 * @param array|mixed $arguments The method arguments.
 	 *
 	 * @return mixed
@@ -275,7 +275,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Handle store method call
 	 *
-	 * @param string $name The method name.
+	 * @param string      $name The method name.
 	 * @param array|mixed $arguments The method arguments.
 	 *
 	 * @return mixed

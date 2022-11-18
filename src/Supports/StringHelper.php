@@ -107,7 +107,7 @@ class StringHelper {
 	 * for a total length not exceeding $length
 	 *
 	 * @param string $string text to truncate.
-	 * @param int $length total desired length of string, including omission.
+	 * @param int    $length total desired length of string, including omission.
 	 * @param string $omission omission text, defaults to '...'.
 	 *
 	 * @return string

@@ -1,3 +1,9 @@
+#### 1.8.1
+
+* Fix issue: sort data is not sorting properly.
+* Add **mailtrap.io** setting to test email functionality.
+* Fix issue related to `\Stackonet\WP\Framework\Supports\Collection` class.
+
 #### 1.8.0
 
 * Add test for RestClient and Filesystem class.

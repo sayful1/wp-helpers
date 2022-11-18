@@ -35,7 +35,7 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 * @return string
 	 */
 	public function __toString() {
-		return json_encode( $this->to_array() );
+		return wp_json_encode( $this->to_array() );
 	}
 
 	/**
@@ -43,28 +43,28 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 *
 	 * @return array
 	 */
-	public function to_array() {
+	public function to_array():array {
 		return $this->all();
 	}
 
 	/**
 	 * Does this collection have a given key?
 	 *
-	 * @param string $key The data key
+	 * @param string $key The data key.
 	 *
 	 * @return bool
 	 */
-	public function has( string $key ) {
+	public function has( string $key ): bool {
 		return isset( $this->collections[ $key ] );
 	}
 
 	/**
 	 * Set collection item
 	 *
-	 * @param string $key The data key
-	 * @param mixed  $value The data value
+	 * @param null|string $key The data key.
+	 * @param mixed       $value The data value.
 	 */
-	public function set( $key, $value ) {
+	public function set( ?string $key, $value ) {
 		if ( is_null( $key ) ) {
 			$this->collections[] = $value;
 		} else {
@@ -77,19 +77,19 @@ class Collection implements CollectionInterface, JsonSerializable {
 	/**
 	 * Get collection item for key
 	 *
-	 * @param string $key The data key
-	 * @param mixed  $default The default value to return if data key does not exist
+	 * @param string $key The data key.
+	 * @param mixed  $default The default value to return if data key does not exist.
 	 *
 	 * @return mixed The key's value, or the default value
 	 */
-	public function get( $key, $default = null ) {
+	public function get( string $key, $default = null ) {
 		return $this->has( $key ) ? $this->collections[ $key ] : $default;
 	}
 
 	/**
 	 * Add item to collection, replacing existing items with the same data key
 	 *
-	 * @param array $items Key-value array of data to append to this collection
+	 * @param array $items Key-value array of data to append to this collection.
 	 */
 	public function replace( array $items ) {
 		foreach ( $items as $key => $value ) {
@@ -102,16 +102,16 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 *
 	 * @return array The collection's source data
 	 */
-	public function all() {
+	public function all(): array {
 		return $this->collections;
 	}
 
 	/**
 	 * Remove item from collection
 	 *
-	 * @param string $key The data key
+	 * @param string $key The data key.
 	 */
-	public function remove( $key ) {
+	public function remove( string $key ) {
 		if ( $this->has( $key ) ) {
 			unset( $this->collections[ $key ] );
 
@@ -138,9 +138,8 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 * @param mixed $offset An offset to check for.
 	 *
 	 * @return boolean true on success or false on failure.
-	 * @since 5.0.0
 	 */
-	public function offsetExists( $offset ) {
+	public function offsetExists( $offset ): bool {
 		return $this->has( $offset );
 	}
 
@@ -152,7 +151,6 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 * @param mixed $offset The offset to retrieve.
 	 *
 	 * @return mixed Can return all value types.
-	 * @since 5.0.0
 	 */
 	public function offsetGet( $offset ) {
 		return $this->get( $offset );
@@ -167,7 +165,6 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 * @param mixed $value The value to set.
 	 *
 	 * @return void
-	 * @since 5.0.0
 	 */
 	public function offsetSet( $offset, $value ) {
 		$this->set( $offset, $value );
@@ -181,7 +178,6 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 * @param mixed $offset The offset to unset.
 	 *
 	 * @return void
-	 * @since 5.0.0
 	 */
 	public function offsetUnset( $offset ) {
 		$this->remove( $offset );
@@ -196,9 +192,8 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 *
 	 * @link http://php.net/manual/en/countable.count.php
 	 * @return int The custom count as an integer.
-	 * @since 5.1.0
 	 */
-	public function count() {
+	public function count(): int {
 		return count( $this->all() );
 	}
 
@@ -211,9 +206,8 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 *
 	 * @link http://php.net/manual/en/iteratoraggregate.getiterator.php
 	 * @return ArrayIterator An instance of an object implementing Iterator
-	 * @since 5.0.0
 	 */
-	public function getIterator() {
+	public function getIterator(): ArrayIterator {
 		return new ArrayIterator( $this->all() );
 	}
 
@@ -227,7 +221,7 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 * @return mixed data which can be serialized by json_encode
 	 * which is a value of any type other than a resource.
 	 */
-	public function jsonSerialize() {
+	public function jsonSerialize(): array {
 		return $this->to_array();
 	}
 }

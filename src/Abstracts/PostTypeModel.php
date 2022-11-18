@@ -186,7 +186,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	 * Get meta data
 	 *
 	 * @param string $key The meta key.
-	 * @param mixed $default Default value.
+	 * @param mixed  $default Default value.
 	 *
 	 * @return mixed
 	 */
@@ -213,7 +213,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Get image data
 	 *
-	 * @param int $image_id The image id.
+	 * @param int    $image_id The image id.
 	 * @param string $size The image size.
 	 *
 	 * @return array|ArrayObject
@@ -345,7 +345,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	 * @param string $menu_name The menu name.
 	 * @param string $name The name in plural form.
 	 * @param string $singular_name The name in singular form.
-	 * @param array $args Additional arguments.
+	 * @param array  $args Additional arguments.
 	 *
 	 * @return array
 	 */
@@ -415,8 +415,8 @@ abstract class PostTypeModel implements JsonSerializable {
 	 * Save meta data
 	 *
 	 * @param WP_Post|int $post The post id or post object.
-	 * @param string $source Data source. admin-ui or rest-api.
-	 * @param array $values The values to be saved.
+	 * @param string      $source Data source. admin-ui or rest-api.
+	 * @param array       $values The values to be saved.
 	 */
 	public static function save_meta_data( $post, string $source = 'admin-ui', array $values = [] ) {
 		$post = get_post( $post );

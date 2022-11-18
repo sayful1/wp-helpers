@@ -128,7 +128,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	 * This stores changes in a special array, so we can track what needs saving the DB later.
 	 *
 	 * @param string $prop Name of prop to set.
-	 * @param mixed $value Value of the prop.
+	 * @param mixed  $value Value of the prop.
 	 */
 	public function set_prop( string $prop, $value ) {
 		if ( true === $this->object_read ) {
@@ -144,7 +144,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	 * Get collection item for key
 	 *
 	 * @param string $prop The data key.
-	 * @param mixed $default The default value to return if data key does not exist.
+	 * @param mixed  $default The default value to return if data key does not exist.
 	 *
 	 * @return mixed The key's value, or the default value
 	 */
@@ -300,7 +300,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	 * Set collection item
 	 *
 	 * @param string $key The data key.
-	 * @param mixed $value The data value.
+	 * @param mixed  $value The data value.
 	 *
 	 * @deprecated 1.7.0
 	 * @see \Stackonet\WP\Framework\Abstracts\Data::set_prop()
@@ -313,7 +313,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	 * Get collection item for key
 	 *
 	 * @param string $prop The data key.
-	 * @param mixed $default The default value to return if data key does not exist.
+	 * @param mixed  $default The default value to return if data key does not exist.
 	 *
 	 * @return mixed The key's value, or the default value
 	 *
