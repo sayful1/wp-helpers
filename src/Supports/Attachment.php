@@ -20,7 +20,7 @@ class Attachment extends Uploader {
 	 *
 	 * @inheritDoc
 	 */
-	public static function upload( $file, $dir = null ) {
+	public static function upload( $file, ?string $dir = null ): array {
 		_deprecated_function( __FUNCTION__, '1.1.4', '\Stackonet\WP\Framework\Media\Uploader::upload()' );
 
 		return parent::upload( $file, $dir );

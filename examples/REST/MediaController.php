@@ -114,7 +114,7 @@ class MediaController extends ApiController {
 			return $this->respondUnauthorized();
 		}
 
-		$files = UploadedFile::getUploadedFiles();
+		$files = UploadedFile::get_uploaded_files();
 
 		if ( ! isset( $files['file'] ) ) {
 			return $this->respondForbidden();
@@ -124,7 +124,7 @@ class MediaController extends ApiController {
 			return $this->respondForbidden();
 		}
 
-		$attachment_id = Uploader::uploadSingleFile( $files['file'] );
+		$attachment_id = Uploader::upload_single_file( $files['file'] );
 		if ( is_wp_error( $attachment_id ) ) {
 			return $this->respondUnprocessableEntity( $attachment_id->get_error_code(), $attachment_id->get_error_message() );
 		}

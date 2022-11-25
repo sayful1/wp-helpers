@@ -99,7 +99,7 @@ class UploadedFile implements UploadedFileInterface {
 	 * Parse a non-normalized, i.e. $_FILES superglobal, tree of uploaded file data.
 	 *
 	 * @param array $uploaded_files The non-normalized tree of uploaded file data.
-	 * @param bool  $sapi Is it Server Application Programming Interface.
+	 * @param bool $sapi Is it Server Application Programming Interface.
 	 *
 	 * @return UploadedFile[] A normalized tree of UploadedFile instances.
 	 */
@@ -144,12 +144,12 @@ class UploadedFile implements UploadedFileInterface {
 	/**
 	 * Construct a new UploadedFile instance.
 	 *
-	 * @param string      $file The full path to the uploaded file provided by the client.
+	 * @param string $file The full path to the uploaded file provided by the client.
 	 * @param string|null $name The file name.
 	 * @param string|null $type The file media type.
-	 * @param int|null    $size The file size in bytes.
-	 * @param int         $error The UPLOAD_ERR_XXX code representing the status of the upload.
-	 * @param bool        $sapi Indicates if the upload is in a SAPI environment.
+	 * @param int|null $size The file size in bytes.
+	 * @param int $error The UPLOAD_ERR_XXX code representing the status of the upload.
+	 * @param bool $sapi Indicates if the upload is in a SAPI environment.
 	 */
 	public function __construct(
 		string $file, ?string $name = null, ?string $type = null, ?int $size = null,
@@ -176,7 +176,7 @@ class UploadedFile implements UploadedFileInterface {
 	 * Moves the uploaded file to the upload directory and assigns it a unique name
 	 * to avoid overwriting an existing uploaded file.
 	 *
-	 * @param string      $directory directory to which the file is moved.
+	 * @param string $directory directory to which the file is moved.
 	 * @param null|string $filename unique file name.
 	 *
 	 * @return string new path of moved file
@@ -357,7 +357,7 @@ class UploadedFile implements UploadedFileInterface {
 	}
 
 	/**
-	 * Check if uploaded file is a image
+	 * Check if uploaded file is an image
 	 *
 	 * @return bool
 	 */
@@ -370,6 +370,31 @@ class UploadedFile implements UploadedFileInterface {
 			'image/bmp',
 			'image/tiff',
 			'image/x-icon',
+		];
+
+		return in_array( $this->get_mime_type(), $mime_types, true );
+	}
+
+	/**
+	 * Check if uploaded file is a video
+	 *
+	 * @return bool
+	 */
+	public function is_video(): bool {
+		$mime_types = [
+			'video/x-ms-asf',
+			'video/x-ms-wmv',
+			'video/x-ms-wmx',
+			'video/x-ms-wm',
+			'video/avi',
+			'video/divx',
+			'video/x-flv',
+			'video/quicktime',
+			'video/mpeg',
+			'video/mp4',
+			'video/ogg',
+			'video/webm',
+			'video/x-matroska',
 		];
 
 		return in_array( $this->get_mime_type(), $mime_types, true );
@@ -407,7 +432,7 @@ class UploadedFile implements UploadedFileInterface {
 	 * Handle camel case method name calling
 	 *
 	 * @param string $name The name of the method being called.
-	 * @param array  $arguments An enumerated array containing the parameters passed to the $name'ed method.
+	 * @param array $arguments An enumerated array containing the parameters passed to the $name'ed method.
 	 *
 	 * @return mixed
 	 * @throws BadMethodCallException It throws exception if $name'ed method is not available.
@@ -429,7 +454,7 @@ class UploadedFile implements UploadedFileInterface {
 	 * Handle camel case method name calling
 	 *
 	 * @param string $name The name of the method being called.
-	 * @param array  $arguments An enumerated array containing the parameters passed to the $name'ed method.
+	 * @param array $arguments An enumerated array containing the parameters passed to the $name'ed method.
 	 *
 	 * @return mixed
 	 * @throws BadMethodCallException It throws exception if $name'ed method is not available.

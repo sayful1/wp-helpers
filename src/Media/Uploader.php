@@ -2,6 +2,7 @@
 
 namespace Stackonet\WP\Framework\Media;
 
+use BadMethodCallException;
 use Exception;
 use Stackonet\WP\Framework\Supports\Logger;
 use WP_Error;
@@ -10,6 +11,9 @@ defined( 'ABSPATH' ) || exit;
 
 /**
  * Class Uploader
+ *
+ * @method static int|WP_Error uploadSingleFile( UploadedFile $file, ?string $dir = null, ?string $filename = null )
+ * @method static string|WP_Error uploadFile( UploadedFile $file, string $directory, ?string $filename = null )
  *
  * @package Stackonet\WP\Framework\Media
  */
@@ -34,7 +38,7 @@ class Uploader {
 			if ( ! $uploaded_file instanceof UploadedFile ) {
 				continue;
 			}
-			$id = self::uploadSingleFile( $uploaded_file, $dir );
+			$id = self::upload_single_file( $uploaded_file, $dir );
 
 			$attachments[]['attachment_id'] = is_wp_error( $id ) ? 0 : $id;
 		}
@@ -47,10 +51,11 @@ class Uploader {
 	 *
 	 * @param UploadedFile $file The uploaded UploadedFile object.
 	 * @param string|null  $dir The directory where to upload file.
+	 * @param string|null  $filename The filename.
 	 *
 	 * @return int|WP_Error Media id on success.
 	 */
-	public static function uploadSingleFile( UploadedFile $file, ?string $dir = null ) {
+	public static function upload_single_file( UploadedFile $file, ?string $dir = null, ?string $filename = null ) {
 		// Check if upload directory is writable.
 		$upload_dir = static::get_upload_dir( $dir );
 		if ( is_wp_error( $upload_dir ) ) {
@@ -58,7 +63,7 @@ class Uploader {
 		}
 
 		// Upload file to upload directory.
-		$file_path = static::uploadFile( $file, $upload_dir );
+		$file_path = static::upload_file( $file, $upload_dir, $filename );
 		if ( is_wp_error( $file_path ) ) {
 			Logger::log( $file_path );
 
@@ -73,11 +78,12 @@ class Uploader {
 	 *
 	 * @param UploadedFile $file The uploaded UploadedFile object.
 	 * @param string       $directory The directory where to upload file.
+	 * @param string|null  $filename The filename for the uploaded file.
 	 *
 	 * @return string|WP_Error Uploaded file full path
 	 */
-	public static function uploadFile( UploadedFile $file, string $directory ) {
-		if ( $file->getSize() > wp_max_upload_size() ) {
+	public static function upload_file( UploadedFile $file, string $directory, ?string $filename = null ) {
+		if ( $file->get_size() > wp_max_upload_size() ) {
 			return new WP_Error( 'large_file_size', 'File size too large.' );
 		}
 
@@ -86,19 +92,21 @@ class Uploader {
 		}
 
 		// Check file has no error.
-		if ( $file->getError() !== UPLOAD_ERR_OK ) {
+		if ( $file->get_error() !== UPLOAD_ERR_OK ) {
 			return new WP_Error( 'invalid_file', 'File not valid.' );
 		}
 
 		try {
-			$filename = wp_unique_filename( $directory, $file->get_client_filename() );
+			if ( empty( $filename ) ) {
+				$filename = wp_unique_filename( $directory, $file->get_client_filename() );
+			}
 
 			$new_file = $file->move_uploaded_file( $directory, $filename );
 
 			// Set correct file permissions.
 			$stat  = stat( dirname( $new_file ) );
 			$perms = $stat['mode'] & 0000666;
-			@chmod( $new_file, $perms );
+			chmod( $new_file, $perms );
 
 			return $new_file;
 		} catch ( Exception $exception ) {
@@ -126,6 +134,8 @@ class Uploader {
 		$attachment_id = wp_insert_attachment( $data, $file_path );
 
 		if ( ! is_wp_error( $attachment_id ) ) {
+			// Make sure that this file is included, as wp_read_video_metadata() depends on it.
+			require_once ABSPATH . 'wp-admin/includes/media.php';
 			// Make sure that this file is included, as wp_generate_attachment_metadata() depends on it.
 			require_once ABSPATH . 'wp-admin/includes/image.php';
 
@@ -163,5 +173,42 @@ class Uploader {
 		}
 
 		return $media_dir;
+	}
+
+	/**
+	 * Convert camel case string to snake case
+	 *
+	 * @param string $camel method name in camel case.
+	 *
+	 * @return string
+	 */
+	private static function camel_to_snake( string $camel ): string {
+		$snake = preg_replace_callback(
+			'/[A-Z]/',
+			function ( $match ) {
+				return '_' . strtolower( $match[0] );
+			},
+			$camel
+		);
+
+		return ltrim( $snake, '_' );
+	}
+
+	/**
+	 * Handle camel case method name calling
+	 *
+	 * @param string $name The name of the method being called.
+	 * @param array  $arguments An enumerated array containing the parameters passed to the $name'ed method.
+	 *
+	 * @return mixed
+	 * @throws BadMethodCallException It throws exception if $name'ed method is not available.
+	 */
+	public static function __callStatic( string $name, array $arguments ) {
+		$new_method = static::camel_to_snake( $name );
+		if ( method_exists( __CLASS__, $new_method ) ) {
+			return static::$new_method( ...$arguments );
+		}
+
+		throw new BadMethodCallException( sprintf( 'Method %s is not available', $name ) );
 	}
 }
