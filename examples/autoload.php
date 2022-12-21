@@ -3,6 +3,7 @@
 use Stackonet\WP\Examples\Faqs\FaqManager;
 use Stackonet\WP\Examples\Testimonial\TestimonialManager;
 use Stackonet\WP\Examples\WordPressCore\MailTrap;
+use Stackonet\WP\Examples\WordPressCore\MetaboxTest;
 use Stackonet\WP\Examples\WordPressCore\SettingPage;
 
 // If this file is called directly, abort.
@@ -42,5 +43,6 @@ add_action(
 		TestimonialManager::init();
 		MailTrap::init();
 		SettingPage::init()->add_settings_page();
+		MetaboxTest::init();
 	}
 );
