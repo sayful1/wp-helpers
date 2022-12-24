@@ -25,6 +25,10 @@ class FieldType {
 	const HTML                = 'html';
 	const SPACING             = 'spacing';
 	const TEXT                = 'text';
+	const NUMBER              = 'number';
+	const DATE                = 'date';
+	const TIME                = 'time';
+	const DATETIME            = 'datetime';
 
 	/**
 	 * Fields that cannot save value

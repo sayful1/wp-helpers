@@ -7,10 +7,13 @@ use Stackonet\WP\Framework\Fields\CheckboxAcceptance;
 use Stackonet\WP\Framework\Fields\CheckboxMulti;
 use Stackonet\WP\Framework\Fields\CheckboxSwitch;
 use Stackonet\WP\Framework\Fields\Color;
+use Stackonet\WP\Framework\Fields\Date;
+use Stackonet\WP\Framework\Fields\DateTime;
 use Stackonet\WP\Framework\Fields\FieldType;
 use Stackonet\WP\Framework\Fields\Html;
 use Stackonet\WP\Framework\Fields\ImagesGallery;
 use Stackonet\WP\Framework\Fields\ImageUploader;
+use Stackonet\WP\Framework\Fields\Number;
 use Stackonet\WP\Framework\Fields\Radio;
 use Stackonet\WP\Framework\Fields\RadioButton;
 use Stackonet\WP\Framework\Fields\Select;
@@ -21,6 +24,7 @@ use Stackonet\WP\Framework\Fields\SelectTerms;
 use Stackonet\WP\Framework\Fields\Spacing;
 use Stackonet\WP\Framework\Fields\Text;
 use Stackonet\WP\Framework\Fields\Textarea;
+use Stackonet\WP\Framework\Fields\Time;
 use Stackonet\WP\Framework\Interfaces\FieldInterface;
 use WP_Error;
 use WP_Post;
@@ -67,25 +71,25 @@ class ClassicMetabox extends MetaboxApi {
 	 */
 	public function meta_box_script() {
 		?>
-		<script>
-			(function ($) {
-				if ('function' === typeof $.fn.tabs) {
-					$("#shapla-metabox-tabs").tabs();
-				}
-				if ('function' === typeof $.fn.wpColorPicker) {
-					$('.color-picker').wpColorPicker();
-				}
-			})(jQuery);
-		</script>
+        <script>
+            (function ($) {
+                if ('function' === typeof $.fn.tabs) {
+                    $("#shapla-metabox-tabs").tabs();
+                }
+                if ('function' === typeof $.fn.wpColorPicker) {
+                    $('.color-picker').wpColorPicker();
+                }
+            })(jQuery);
+        </script>
 		<?php
 	}
 
 	/**
 	 * Save the meta when the post is saved.
 	 *
-	 * @param int     $post_id Post ID.
+	 * @param int $post_id Post ID.
 	 * @param WP_Post $post Post object.
-	 * @param bool    $update Whether this is an existing post being updated or not.
+	 * @param bool $update Whether this is an existing post being updated or not.
 	 *
 	 * @return void
 	 */
@@ -174,20 +178,24 @@ class ClassicMetabox extends MetaboxApi {
 	 * @return void
 	 */
 	public function init() {
-		add_action(
-			'add_meta_boxes',
-			function ( $post_type ) {
-				$config = $this->get_config();
-				add_meta_box(
-					$config['id'],
-					$config['title'],
-					array( $this, 'meta_box_callback' ),
-					$post_type,
-					$config['context'],
-					$config['priority'],
-					$this->fields
-				);
-			}
+		add_action( 'add_meta_boxes', [ $this, 'add_meta_box' ] );
+	}
+
+	/**
+	 * Add meta box
+	 *
+	 * @return void
+	 */
+	public function add_meta_box() {
+		$config = $this->get_config();
+		add_meta_box(
+			$config['id'],
+			$config['title'],
+			[ $this, 'meta_box_callback' ],
+			$config['screen'],
+			$config['context'],
+			$config['priority'],
+			$this->fields
 		);
 	}
 
@@ -195,7 +203,7 @@ class ClassicMetabox extends MetaboxApi {
 	 * Render Meta Box content.
 	 *
 	 * @param WP_Post $post The object for the current post/page.
-	 * @param array   $fields The metabox fields.
+	 * @param array $fields The metabox fields.
 	 */
 	public function meta_box_callback( $post, $fields ) {
 		if ( ! is_array( $fields ) ) {
@@ -225,7 +233,7 @@ class ClassicMetabox extends MetaboxApi {
 	 * @return string
 	 */
 	public function get_tab_content( array $values = [] ): string {
-		$html  = '<div class="shapla-tabs-wrapper">';
+		$html = '<div class="shapla-tabs-wrapper">';
 		$html .= '<div id="shapla-metabox-tabs" class="shapla-tabs">';
 
 		$html .= '<ul class="shapla-tabs-list">';
@@ -335,9 +343,9 @@ class ClassicMetabox extends MetaboxApi {
 	/**
 	 * Render field
 	 *
-	 * @param array  $settings Field settings.
+	 * @param array $settings Field settings.
 	 * @param string $name Field name.
-	 * @param mixed  $value Field value.
+	 * @param mixed $value Field value.
 	 *
 	 * @return string
 	 */
@@ -376,6 +384,10 @@ class ClassicMetabox extends MetaboxApi {
 			FieldType::SPACING             => Spacing::class,
 			FieldType::TEXT                => Text::class,
 			FieldType::TEXTAREA            => Textarea::class,
+			FieldType::NUMBER              => Number::class,
+			FieldType::DATE                => Date::class,
+			FieldType::TIME                => Time::class,
+			FieldType::DATETIME            => DateTime::class,
 		];
 
 		$class = array_key_exists( $type, $types ) ? $types[ $type ] : $types['text'];
