@@ -29,6 +29,9 @@ class FieldType {
 	const DATE                = 'date';
 	const TIME                = 'time';
 	const DATETIME            = 'datetime';
+	const EMAIL               = 'email';
+	const URL                 = 'url';
+	const TELEPHONE           = 'tel';
 
 	/**
 	 * Fields that cannot save value

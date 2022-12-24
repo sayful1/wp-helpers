@@ -1,3 +1,7 @@
+#### 1.9.1
+
+* Add Date, Time, Datetime, Email, Tel, Url and Number field types.
+
 #### 1.9.0
 
 * Add Metabox api classes.

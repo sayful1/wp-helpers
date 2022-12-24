@@ -9,6 +9,7 @@ use Stackonet\WP\Framework\Fields\CheckboxSwitch;
 use Stackonet\WP\Framework\Fields\Color;
 use Stackonet\WP\Framework\Fields\Date;
 use Stackonet\WP\Framework\Fields\DateTime;
+use Stackonet\WP\Framework\Fields\Email;
 use Stackonet\WP\Framework\Fields\FieldType;
 use Stackonet\WP\Framework\Fields\Html;
 use Stackonet\WP\Framework\Fields\ImagesGallery;
@@ -22,9 +23,11 @@ use Stackonet\WP\Framework\Fields\SelectPosts;
 use Stackonet\WP\Framework\Fields\SelectSidebar;
 use Stackonet\WP\Framework\Fields\SelectTerms;
 use Stackonet\WP\Framework\Fields\Spacing;
+use Stackonet\WP\Framework\Fields\Tel;
 use Stackonet\WP\Framework\Fields\Text;
 use Stackonet\WP\Framework\Fields\Textarea;
 use Stackonet\WP\Framework\Fields\Time;
+use Stackonet\WP\Framework\Fields\Url;
 use Stackonet\WP\Framework\Interfaces\FieldInterface;
 use WP_Error;
 use WP_Post;
@@ -388,6 +391,9 @@ class ClassicMetabox extends MetaboxApi {
 			FieldType::DATE                => Date::class,
 			FieldType::TIME                => Time::class,
 			FieldType::DATETIME            => DateTime::class,
+			FieldType::EMAIL               => Email::class,
+			FieldType::URL                 => Url::class,
+			FieldType::TELEPHONE           => Tel::class,
 		];
 
 		$class = array_key_exists( $type, $types ) ? $types[ $type ] : $types['text'];

@@ -207,9 +207,27 @@ class MetaboxTest {
 				'panel' => 'panel_2',
 			],
 			'date_test'                => [
-				'type'  => 'date',
+				'type'  => FieldType::DATE,
 				'id'    => 'date_test',
 				'label' => 'Date field',
+				'panel' => 'panel_2',
+			],
+			'time_test'                => [
+				'type'  => FieldType::TIME,
+				'id'    => 'time_test',
+				'label' => 'Time field',
+				'panel' => 'panel_2',
+			],
+			'datetime_test'            => [
+				'type'  => FieldType::DATETIME,
+				'id'    => 'datetime_test',
+				'label' => 'Datetime field',
+				'panel' => 'panel_2',
+			],
+			'number_test'              => [
+				'type'  => FieldType::NUMBER,
+				'id'    => 'number_test',
+				'label' => 'Number field',
 				'panel' => 'panel_2',
 			],
 			'textarea_test'            => [
