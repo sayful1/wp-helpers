@@ -119,6 +119,11 @@ class ValidateTest extends \WP_UnitTestCase {
 		$this->assertFalse( Validate::time( '10:20:30 AM' ) );
 	}
 
+	public function test_it_validate_datetime() {
+		$this->assertTrue( Validate::datetime( '1989-02-04T12:30' ) );
+		$this->assertFalse( Validate::datetime( '1989-02-04T25:30' ) );
+	}
+
 	public function test_it_validate_phone_e164() {
 		$this->assertTrue( Validate::phone( '+14155552671' ) );
 		$this->assertTrue( Validate::phone( '+8801701309039' ) );

@@ -144,9 +144,9 @@ class Validate {
 	 * Check if string length is greater than or equal to given int.
 	 * To check the size of a number, pass the optional number option.
 	 *
-	 * @param mixed     $value The value to be validated.
+	 * @param mixed $value The value to be validated.
 	 * @param float|int $min_value The minimum value to be validated against.
-	 * @param boolean   $is_number If the value is a number.
+	 * @param boolean $is_number If the value is a number.
 	 *
 	 * @return boolean
 	 */
@@ -165,9 +165,9 @@ class Validate {
 	 * Check if string length is less than or equal to given int.
 	 * To check the size of a number, pass the optional number option.
 	 *
-	 * @param mixed         $value The value to be validated.
+	 * @param mixed $value The value to be validated.
 	 * @param integer|float $max_value The maximum value to be validated against.
-	 * @param boolean       $is_number If the value is a number.
+	 * @param boolean $is_number If the value is a number.
 	 *
 	 * @return boolean
 	 */
@@ -215,6 +215,27 @@ class Validate {
 
 		// Validate 12 hours time.
 		return (bool) preg_match( '/^(1[0-2]|0?[1-9]):[0-5][0-9] (AM|PM)$/i', $value );
+	}
+
+	/**
+	 * Check if the given input is a valid datetime format Y-m-dTH:i.
+	 *
+	 * @param mixed $value The value to be validated. The value must be at ISO 8601 (YYYY-MM-DD) format.
+	 *
+	 * @return boolean
+	 */
+	public static function datetime( $value ): bool {
+		if ( ! is_string( $value ) ) {
+			return false;
+		}
+
+		$pattern  = '/^'; // Start of string.
+		$pattern .= '\d{4}-(0[1-9]|1[012])-(0[1-9]|[12][0-9]|3[01])'; // Date.
+		$pattern .= 'T'; // Separator.
+		$pattern .= '(?:2[0-3]|[01][0-9]):[0-5][0-9]'; // Time.
+		$pattern .= '$/'; // End of string.
+
+		return (bool) preg_match( $pattern, $value );
 	}
 
 	/**
@@ -279,7 +300,7 @@ class Validate {
 	 * @param mixed $phone_e164 The phone number in E164 format.
 	 * Format must be a number up to fifteen digits in length
 	 * Starting with a ‘+’ sign, country code (1 to 3 digits), subscriber number (max 12 digits).
-	 * @param int   $min_length Minimum number length.
+	 * @param int $min_length Minimum number length.
 	 *
 	 * @return bool
 	 */
