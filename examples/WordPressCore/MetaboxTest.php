@@ -3,6 +3,7 @@
 namespace Stackonet\WP\Examples\WordPressCore;
 
 use Stackonet\WP\Framework\Abstracts\PostTypeModel;
+use Stackonet\WP\Framework\Fields\FieldType;
 use Stackonet\WP\Framework\MetaboxApi\ClassicMetabox;
 
 /**
@@ -65,7 +66,7 @@ class MetaboxTest {
 
 		$fields = [
 			'checkbox_multi_test'      => [
-				'type'    => 'checkbox',
+				'type'    => FieldType::CHECKBOX,
 				'id'      => 'checkbox_multi_test',
 				'label'   => __( 'Checkbox multiple' ),
 				'panel'   => 'panel_1',
@@ -78,7 +79,7 @@ class MetaboxTest {
 				],
 			],
 			'checkbox_switch_test'     => [
-				'type'        => 'switch',
+				'type'        => FieldType::CHECKBOX_SWITCH,
 				'id'          => 'switch_test',
 				'label'       => __( 'Checkbox switch test' ),
 				'subtitle'    => __( 'Discourage search engines from indexing this site' ),
@@ -86,7 +87,7 @@ class MetaboxTest {
 				'panel'       => 'panel_1',
 			],
 			'checkbox_true_false_test' => [
-				'type'        => 'true_false',
+				'type'        => FieldType::CHECKBOX_ACCEPTANCE,
 				'id'          => 'true_false_test',
 				'label'       => __( 'Search engine visibility' ),
 				'subtitle'    => __( 'Discourage search engines from indexing this site' ),
@@ -95,33 +96,34 @@ class MetaboxTest {
 				'default'     => 'off',
 			],
 			'color_test'               => [
-				'type'    => 'color',
+				'type'    => FieldType::COLOR,
 				'id'      => 'color_test',
 				'label'   => __( 'Color test' ),
 				'panel'   => 'panel_1',
 				'default' => '#ffffff',
 			],
 			'html_test'                => [
-				'type'  => 'html',
+				'type'  => FieldType::HTML,
 				'id'    => 'html_test',
 				'label' => __( 'HTML test' ),
 				'panel' => 'panel_1',
 				'html'  => '<p>HTML test</p>',
 			],
 			'images_gallery_test'      => [
-				'type'  => 'images_gallery',
-				'id'    => 'images_gallery_test',
-				'label' => __( 'Image gallery' ),
-				'panel' => 'panel_1',
+				'type'    => FieldType::IMAGE,
+				'gallery' => true,
+				'id'      => 'images_gallery_test',
+				'label'   => __( 'Image gallery' ),
+				'panel'   => 'panel_1',
 			],
 			'upload_iframe_test'       => [
-				'type'  => 'upload_iframe',
+				'type'  => FieldType::IMAGE,
 				'id'    => 'upload_iframe_test',
-				'label' => __( 'Upload iframe' ),
+				'label' => __( 'Image' ),
 				'panel' => 'panel_1',
 			],
 			'radio_test'               => [
-				'type'    => 'radio',
+				'type'    => FieldType::RADIO,
 				'id'      => 'radio_test',
 				'label'   => __( 'Radio test' ),
 				'panel'   => 'panel_1',
@@ -134,7 +136,7 @@ class MetaboxTest {
 				],
 			],
 			'radio_button_test'        => [
-				'type'        => 'radio_button',
+				'type'        => FieldType::RADIO_BUTTON,
 				'id'          => 'button_group_test',
 				'label'       => __( 'Content Width' ),
 				'description' => __( '"100% Width" will take all screen width. On block editor, only certain blocks takes 100% width.' ),
@@ -146,7 +148,7 @@ class MetaboxTest {
 				],
 			],
 			'select_test'              => [
-				'type'        => 'select',
+				'type'        => FieldType::SELECT,
 				'id'          => 'select_test',
 				'label'       => __( 'Sidebar Position' ),
 				'description' => __( 'Controls sidebar position for current page.' ),
@@ -160,35 +162,35 @@ class MetaboxTest {
 				],
 			],
 			'select_image_sizes_test'  => [
-				'type'        => 'image_sizes',
+				'type'        => FieldType::SELECT_IMAGE_SIZE,
 				'id'          => 'select_image_sizes_test',
 				'label'       => __( 'Image Sizes' ),
 				'description' => __( 'Select image sizes for current page.' ),
 				'panel'       => 'panel_1',
 			],
 			'posts_list_test'          => [
-				'type'        => 'posts_list',
+				'type'        => FieldType::SELECT_POSTS_LIST,
 				'id'          => 'posts_list_test',
 				'label'       => __( 'Posts List' ),
 				'description' => __( 'Select posts for current page.' ),
 				'panel'       => 'panel_1',
 			],
 			'post_terms_test'          => [
-				'type'        => 'post_terms',
+				'type'        => FieldType::SELECT_TERMS_LIST,
 				'id'          => 'post_terms_test',
 				'label'       => __( 'Post Terms' ),
 				'description' => __( 'Select post terms for current page.' ),
 				'panel'       => 'panel_1',
 			],
 			'sidebars_test'            => [
-				'type'        => 'sidebars',
+				'type'        => FieldType::SELECT_SIDEBARS,
 				'id'          => 'sidebars_test',
 				'label'       => __( 'Sidebar widget area' ),
 				'description' => __( 'Controls sidebar widget area for current page.' ),
 				'panel'       => 'panel_1',
 			],
 			'spacing_test'             => [
-				'type'        => 'spacing',
+				'type'        => FieldType::SPACING,
 				'id'          => 'spacing_test',
 				'label'       => __( 'Content Padding' ),
 				'description' => __( 'Leave empty to use value from theme options.' ),
@@ -199,7 +201,7 @@ class MetaboxTest {
 				],
 			],
 			'text_test'                => [
-				'type'  => 'text',
+				'type'  => FieldType::TEXT,
 				'id'    => 'text_test',
 				'label' => 'Text field',
 				'panel' => 'panel_2',
@@ -211,7 +213,7 @@ class MetaboxTest {
 				'panel' => 'panel_2',
 			],
 			'textarea_test'            => [
-				'type'  => 'textarea',
+				'type'  => FieldType::TEXTAREA,
 				'id'    => 'textarea_test',
 				'label' => 'Textarea field',
 				'panel' => 'panel_2',

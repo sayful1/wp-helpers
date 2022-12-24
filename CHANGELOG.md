@@ -1,3 +1,7 @@
+#### 1.9.0
+
+* Add Metabox api classes.
+
 #### 1.8.1
 
 * Fix issue: sort data is not sorting properly.

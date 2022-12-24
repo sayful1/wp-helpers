@@ -3,10 +3,11 @@
 namespace Stackonet\WP\Framework\MetaboxApi;
 
 use Stackonet\WP\Framework\Fields\BaseField;
+use Stackonet\WP\Framework\Fields\CheckboxAcceptance;
 use Stackonet\WP\Framework\Fields\CheckboxMulti;
 use Stackonet\WP\Framework\Fields\CheckboxSwitch;
-use Stackonet\WP\Framework\Fields\CheckboxTrueFalse;
 use Stackonet\WP\Framework\Fields\Color;
+use Stackonet\WP\Framework\Fields\FieldType;
 use Stackonet\WP\Framework\Fields\Html;
 use Stackonet\WP\Framework\Fields\ImagesGallery;
 use Stackonet\WP\Framework\Fields\ImageUploader;
@@ -21,7 +22,6 @@ use Stackonet\WP\Framework\Fields\Spacing;
 use Stackonet\WP\Framework\Fields\Text;
 use Stackonet\WP\Framework\Fields\Textarea;
 use Stackonet\WP\Framework\Interfaces\FieldInterface;
-use Stackonet\WP\Framework\Supports\Sanitize;
 use WP_Error;
 use WP_Post;
 
@@ -37,17 +37,47 @@ class ClassicMetabox extends MetaboxApi {
 	protected static $instance;
 
 	/**
-	 * Metabox field name
-	 *
-	 * @var string
-	 */
-	protected $option_name = '_shapla_page_options';
-
-	/**
 	 * Shapla_Metabox constructor.
 	 */
 	public function __construct() {
-		add_action( 'save_post', array( $this, 'save_meta_box' ), 10, 3 );
+		add_action( 'save_post', [ $this, 'save_meta_box' ], 10, 3 );
+		add_action( 'admin_enqueue_scripts', [ $this, 'meta_box_style' ] );
+		add_action( 'admin_print_footer_scripts', [ $this, 'meta_box_script' ], 90 );
+	}
+
+	/**
+	 * Meta box style
+	 */
+	public function meta_box_style() {
+		wp_enqueue_script( 'jquery' );
+		wp_enqueue_media();
+		if ( $this->has_panels() ) {
+			wp_enqueue_script( 'jquery-ui-tabs' );
+		}
+		if ( $this->has_color_field() ) {
+			wp_enqueue_style( 'wp-color-picker' );
+			wp_enqueue_script( 'wp-color-picker' );
+		}
+	}
+
+	/**
+	 * Meta box script
+	 *
+	 * @return void
+	 */
+	public function meta_box_script() {
+		?>
+		<script>
+			(function ($) {
+				if ('function' === typeof $.fn.tabs) {
+					$("#shapla-metabox-tabs").tabs();
+				}
+				if ('function' === typeof $.fn.wpColorPicker) {
+					$('.color-picker').wpColorPicker();
+				}
+			})(jQuery);
+		</script>
+		<?php
 	}
 
 	/**
@@ -84,8 +114,17 @@ class ClassicMetabox extends MetaboxApi {
 
 		do_action( 'shapla_before_save_post_meta', $post_id, $post, $update );
 
-		if ( isset( $_POST[ $this->option_name ] ) ) {
-			update_post_meta( $post_id, $this->option_name, Sanitize::deep( $_POST[ $this->option_name ] ) );
+		if ( isset( $_POST[ $this->get_input_group() ] ) ) {
+			$raw_values       = $_POST[ $this->get_input_group() ] ?? [];
+			$sanitized_values = $this->sanitize( $raw_values );
+
+			if ( $this->get_option_name() ) {
+				update_post_meta( $post_id, $this->get_option_name(), $sanitized_values );
+			} else {
+				foreach ( $sanitized_values as $meta_key => $meta_value ) {
+					update_post_meta( $post_id, $meta_key, $meta_value );
+				}
+			}
 
 			$styles = $this->get_styles();
 			if ( ! empty( $styles ) ) {
@@ -124,21 +163,7 @@ class ClassicMetabox extends MetaboxApi {
 
 		$this->set_fields( $options['fields'] );
 
-		add_action(
-			'add_meta_boxes',
-			function ( $post_type ) {
-				$config = $this->get_config();
-				add_meta_box(
-					$config['id'],
-					$config['title'],
-					array( $this, 'meta_box_callback' ),
-					$post_type,
-					$config['context'],
-					$config['priority'],
-					$this->fields
-				);
-			}
-		);
+		$this->init();
 
 		return true;
 	}
@@ -179,7 +204,9 @@ class ClassicMetabox extends MetaboxApi {
 
 		wp_nonce_field( basename( __FILE__ ), '_shapla_nonce' );
 
-		$values = (array) get_post_meta( $post->ID, $this->option_name, true );
+		$values = $this->get_option_name() ?
+			(array) get_post_meta( $post->ID, $this->get_option_name(), true ) :
+			[];
 
 		if ( $this->has_panels() ) {
 			// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
@@ -198,7 +225,10 @@ class ClassicMetabox extends MetaboxApi {
 	 * @return string
 	 */
 	public function get_tab_content( array $values = [] ): string {
-		$html = '<ul class="shapla-tabs-list">';
+		$html  = '<div class="shapla-tabs-wrapper">';
+		$html .= '<div id="shapla-metabox-tabs" class="shapla-tabs">';
+
+		$html .= '<ul class="shapla-tabs-list">';
 		foreach ( $this->get_panels() as $panel ) {
 			$class = ! empty( $panel['class'] ) ? $panel['class'] : $panel['id'];
 
@@ -224,6 +254,9 @@ class ClassicMetabox extends MetaboxApi {
 			$html .= '</div>';
 		}
 
+		$html .= '</div>';
+		$html .= '</div>';
+
 		return $html;
 	}
 
@@ -240,7 +273,7 @@ class ClassicMetabox extends MetaboxApi {
 		$html = '<table class="form-table shapla-metabox-table">';
 		foreach ( $fields as $field ) {
 
-			$name  = $this->option_name . '[' . $field['id'] . ']';
+			$name  = $this->get_input_group() . '[' . $field['id'] . ']';
 			$value = empty( $values[ $field['id'] ] ) ? $field['default'] : $values[ $field['id'] ];
 
 			if ( ! isset( $values[ $field['id'] ] ) ) {
@@ -272,6 +305,34 @@ class ClassicMetabox extends MetaboxApi {
 	}
 
 	/**
+	 * Sanitize user submitted values.
+	 *
+	 * @param array $raw_values User submitted values.
+	 *
+	 * @return array
+	 */
+	public function sanitize( array $raw_values ): array {
+		$sanitized_values = [];
+		foreach ( $this->get_fields() as $field ) {
+			if ( in_array( $field['type'], FieldType::GUARDED, true ) ) {
+				continue;
+			}
+			$raw_value = $raw_values[ $field['id'] ] ?? null;
+			if ( $field['sanitize_callback'] && is_callable( $field['sanitize_callback'] ) ) {
+				$sanitized_values[ $field['id'] ] = call_user_func(
+					$field['sanitize_callback'],
+					$raw_value
+				);
+			} else {
+				$field_class                      = self::get_field_class( $field['type'] );
+				$sanitized_values[ $field['id'] ] = $field_class->sanitize( $raw_value, $field );
+			}
+		}
+
+		return $sanitized_values;
+	}
+
+	/**
 	 * Render field
 	 *
 	 * @param array  $settings Field settings.
@@ -298,23 +359,23 @@ class ClassicMetabox extends MetaboxApi {
 	 */
 	private static function get_field_class( string $type = 'text' ): FieldInterface {
 		$types = [
-			'checkbox'       => CheckboxMulti::class,
-			'switch'         => CheckboxSwitch::class,
-			'true_false'     => CheckboxTrueFalse::class,
-			'color'          => Color::class,
-			'html'           => Html::class,
-			'images_gallery' => ImagesGallery::class,
-			'upload_iframe'  => ImageUploader::class,
-			'radio'          => Radio::class,
-			'radio_button'   => RadioButton::class,
-			'select'         => Select::class,
-			'image_sizes'    => SelectImageSize::class,
-			'posts_list'     => SelectPosts::class,
-			'post_terms'     => SelectTerms::class,
-			'sidebars'       => SelectSidebar::class,
-			'spacing'        => Spacing::class,
-			'text'           => Text::class,
-			'textarea'       => Textarea::class,
+			FieldType::CHECKBOX            => CheckboxMulti::class,
+			FieldType::CHECKBOX_SWITCH     => CheckboxSwitch::class,
+			FieldType::CHECKBOX_ACCEPTANCE => CheckboxAcceptance::class,
+			FieldType::COLOR               => Color::class,
+			FieldType::HTML                => Html::class,
+			FieldType::IMAGE               => ImageUploader::class,
+			FieldType::IMAGE_GALLERY       => ImagesGallery::class,
+			FieldType::RADIO               => Radio::class,
+			FieldType::RADIO_BUTTON        => RadioButton::class,
+			FieldType::SELECT              => Select::class,
+			FieldType::SELECT_IMAGE_SIZE   => SelectImageSize::class,
+			FieldType::SELECT_POSTS_LIST   => SelectPosts::class,
+			FieldType::SELECT_TERMS_LIST   => SelectTerms::class,
+			FieldType::SELECT_SIDEBARS     => SelectSidebar::class,
+			FieldType::SPACING             => Spacing::class,
+			FieldType::TEXT                => Text::class,
+			FieldType::TEXTAREA            => Textarea::class,
 		];
 
 		$class = array_key_exists( $type, $types ) ? $types[ $type ] : $types['text'];

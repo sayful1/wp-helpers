@@ -16,16 +16,16 @@ class RadioButton extends BaseField {
 		$value = $this->get_value();
 		$name  = $this->get_name();
 
-		$html = '<div id="' . esc_attr( $this->get_setting( 'id' ) ) . '" class="buttonset">';
+		$html = '<div id="' . esc_attr( $this->get_setting( 'id' ) ) . '" class="radio-button">';
 		foreach ( $this->get_choices() as $choice ) {
 			$is_pro_only = isset( $choice['pro_only'] ) && $choice['pro_only'];
 			$id          = sprintf( '%s-%s', $this->get_setting( 'id' ), $choice['value'] );
-			$label_class = sprintf( 'switch-label switch-label-%s', ( $choice['value'] === $value ) ? 'on' : 'off' );
+			$label_class = sprintf( 'radio-button-label radio-button-label-%s', ( $choice['value'] === $value ) ? 'on' : 'off' );
 			$radio_attr  = [
 				'type'    => 'radio',
 				'name'    => $name,
 				'id'      => $id,
-				'class'   => 'switch-input screen-reader-text',
+				'class'   => 'radio-button-input screen-reader-text',
 				'value'   => $choice['value'],
 				'checked' => $choice['value'] === $value,
 			];

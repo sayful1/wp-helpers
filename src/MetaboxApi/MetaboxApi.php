@@ -14,9 +14,16 @@ class MetaboxApi {
 	/**
 	 * Metabox field name
 	 *
+	 * @var string|null
+	 */
+	protected $option_name = null;
+
+	/**
+	 * Get input group name
+	 *
 	 * @var string
 	 */
-	protected $option_name = '_single_post_settings';
+	protected $input_group = null;
 
 	/**
 	 * Metabox config
@@ -64,7 +71,7 @@ class MetaboxApi {
 	 */
 	public function set_config( array $config ) {
 		$default = array(
-			'id'       => 'shapla_meta_box_options',
+			'id'       => 'meta_box_options',
 			'title'    => 'Page options',
 			'screen'   => 'page',
 			'context'  => 'advanced',
@@ -260,7 +267,7 @@ class MetaboxApi {
 	 * @return static
 	 */
 	public function set_field( array $options ) {
-		$default        = array(
+		$default = array(
 			'type'        => 'text',
 			'id'          => '',
 			'section'     => 'default',
@@ -269,6 +276,21 @@ class MetaboxApi {
 			'priority'    => 200,
 			'default'     => '',
 		);
+
+		if ( isset( $options['choices'] ) ) {
+			$_options = [];
+			foreach ( $options['choices'] as $key => $choice ) {
+				if ( is_array( $choice ) && isset( $choice['label'], $choice['value'] ) ) {
+					$_options[] = $choice;
+				} elseif ( is_scalar( $choice ) ) {
+					$_options[] = [
+						'value' => $key,
+						'label' => $choice,
+					];
+				}
+			}
+			$options['choices'] = $_options;
+		}
 		$this->fields[] = wp_parse_args( $options, $default );
 
 		return $this;
@@ -291,8 +313,12 @@ class MetaboxApi {
 		// initially we're going to format our styles as an array.
 		// This is going to make processing them a lot easier
 		// and make sure there are no duplicate styles etc.
-		$css    = [];
-		$values = get_post_meta( $post->ID, $this->option_name, true );
+		$css = [];
+		if ( $this->option_name ) {
+			$values = get_post_meta( $post->ID, $this->option_name, true );
+		} else {
+			$values = [];
+		}
 
 		// start parsing our fields.
 		foreach ( $fields as $field ) {
@@ -303,7 +329,11 @@ class MetaboxApi {
 
 			// Get the default value of this field.
 			$default = $field['default'] ?? '';
-			$value   = $values[ $field['id'] ] ?? $default;
+			if ( $this->option_name ) {
+				$value = $values[ $field['id'] ] ?? $default;
+			} else {
+				$value = get_post_meta( $post->ID, $field['id'], true ) ?? $default;
+			}
 
 			CssGenerator::css( $css, $field, $value );
 		}
@@ -328,5 +358,60 @@ class MetaboxApi {
 		);
 
 		return $array_copy;
+	}
+
+	/**
+	 * Check if we have color fields
+	 *
+	 * @return bool
+	 */
+	public function has_color_field(): bool {
+		$types = array_column( $this->get_fields(), 'type' );
+
+		return in_array( 'color', $types, true );
+	}
+
+	/**
+	 * Get option name
+	 *
+	 * @return string|null
+	 */
+	public function get_option_name(): ?string {
+		return $this->option_name;
+	}
+
+	/**
+	 * Set option name
+	 *
+	 * @param string|null $option_name Option name.
+	 */
+	public function set_option_name( ?string $option_name ) {
+		$this->option_name = $option_name;
+
+		return $this;
+	}
+
+	/**
+	 * Get input group
+	 *
+	 * @return string|null
+	 */
+	public function get_input_group(): ?string {
+		if ( $this->input_group ) {
+			return $this->input_group;
+		}
+
+		return 'random_custom_fields';
+	}
+
+	/**
+	 * Set input group name
+	 *
+	 * @param string $input_group The input group name.
+	 */
+	public function set_input_group( string $input_group ) {
+		$this->input_group = $input_group;
+
+		return $this;
 	}
 }

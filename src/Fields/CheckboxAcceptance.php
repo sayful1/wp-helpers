@@ -7,7 +7,7 @@ defined( 'ABSPATH' ) || exit;
 /**
  * CheckboxTrueFalse class
  */
-class CheckboxTrueFalse extends BaseField {
+class CheckboxAcceptance extends BaseField {
 
 	/**
 	 * Render checkbox html content

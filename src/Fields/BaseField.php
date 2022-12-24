@@ -87,16 +87,18 @@ abstract class BaseField implements FieldInterface {
 	 */
 	public function set_settings( array $settings ) {
 		$default        = [
-			'type'        => 'text',
-			'id'          => '',
-			'section'     => 'default',
-			'label'       => '',
-			'description' => '',
-			'priority'    => 10,
-			'default'     => '',
-			'choices'     => [],
-			'field_class' => 'sp-input-text',
-			'label_class' => '',
+			'type'              => 'text',
+			'id'                => '',
+			'section'           => 'default',
+			'label'             => '',
+			'description'       => '',
+			'priority'          => 10,
+			'default'           => '',
+			'choices'           => [],
+			'field_class'       => 'sp-input-text',
+			'label_class'       => '',
+			'sanitize_callback' => '',
+			'input_attributes'  => [],
 		];
 		$this->settings = wp_parse_args( $settings, $default );
 	}
