@@ -3,6 +3,7 @@
 namespace Stackonet\WP\Examples\REST;
 
 use Exception;
+use Stackonet\WP\Framework\Media\ChunkFileUploader;
 use Stackonet\WP\Framework\Media\UploadedFile;
 use Stackonet\WP\Framework\Media\Uploader;
 use Stackonet\WP\Framework\REST\ApiController;
@@ -115,16 +116,30 @@ class MediaController extends ApiController {
 		}
 
 		$files = UploadedFile::get_uploaded_files();
+		$file  = $files['file'] ?? null;
 
-		if ( ! isset( $files['file'] ) ) {
+		if ( ! $file instanceof UploadedFile ) {
 			return $this->respondForbidden();
 		}
 
-		if ( ! $files['file'] instanceof UploadedFile ) {
-			return $this->respondForbidden();
+		if ( $request->has_param( 'chunk' ) && $request->has_param( 'chunks' ) ) {
+			$name          = $request->get_param( 'name' );
+			$attachment_id = ChunkFileUploader::upload( $file, [
+				'chunk'  => $request->get_param( 'chunk' ),
+				'chunks' => $request->get_param( 'chunks' ),
+				'name'   => ! empty( $name ) ? $name : $file->get_client_filename(),
+			] );
+
+			if ( 0 === $attachment_id ) {
+				return $this->respondAccepted();
+			}
+
+			if ( $attachment_id instanceof UploadedFile ) {
+				$file = $attachment_id;
+			}
 		}
 
-		$attachment_id = Uploader::upload_single_file( $files['file'] );
+		$attachment_id = Uploader::upload_single_file( $file );
 		if ( is_wp_error( $attachment_id ) ) {
 			return $this->respondUnprocessableEntity( $attachment_id->get_error_code(), $attachment_id->get_error_message() );
 		}
@@ -191,7 +206,7 @@ class MediaController extends ApiController {
 	 * If current user can delete media
 	 *
 	 * @param WP_Post $post
-	 * @param string  $token
+	 * @param string $token
 	 *
 	 * @return bool
 	 */
@@ -215,8 +230,8 @@ class MediaController extends ApiController {
 	/**
 	 * Prepares the item for the REST response.
 	 *
-	 * @param int             $attachment_id WordPress representation of the item.
-	 * @param WP_REST_Request $request       Request object.
+	 * @param int $attachment_id WordPress representation of the item.
+	 * @param WP_REST_Request $request Request object.
 	 *
 	 * @return array
 	 */

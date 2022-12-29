@@ -1,3 +1,7 @@
+#### 1.9.2
+
+* Add `ChunkFileUploader` class to upload files in chunks.
+
 #### 1.9.1
 
 * Add Date, Time, Datetime, Email, Tel, Url and Number field types.
