@@ -1,3 +1,7 @@
+#### 1.9.3
+
+* Update `DataStoreBase` class to access `get_pagination_and_order_data` and `get_order_by` methods.
+
 #### 1.9.2
 
 * Add `ChunkFileUploader` class to upload files in chunks.

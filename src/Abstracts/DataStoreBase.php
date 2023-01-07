@@ -762,7 +762,7 @@ class DataStoreBase implements DataStoreInterface {
 	 *
 	 * @return array
 	 */
-	protected function get_pagination_and_order_data( array $args ): array {
+	public function get_pagination_and_order_data( array $args ): array {
 		$paged        = isset( $args['paged'] ) ? absint( $args['paged'] ) : 1;
 		$current_page = isset( $args['page'] ) ? absint( $args['page'] ) : $paged;
 
@@ -785,7 +785,7 @@ class DataStoreBase implements DataStoreInterface {
 	 *
 	 * @return int
 	 */
-	protected function calculate_offset( int $current_page = 1, int $per_page = 0 ) {
+	public function calculate_offset( int $current_page = 1, int $per_page = 0 ) {
 		$page = max( 1, $current_page );
 
 		return (int) ( $page - 1 ) * ( $per_page > 0 ? $per_page : $this->per_page );
@@ -798,7 +798,7 @@ class DataStoreBase implements DataStoreInterface {
 	 *
 	 * @return string
 	 */
-	protected function get_order_by( array $args ): string {
+	public function get_order_by( array $args ): string {
 		$columns_names = static::get_columns_names( $this->get_table_name() );
 		$orders_by     = $args['order_by'] ?? [];
 		$orders_by     = is_string( $orders_by ) ? explode( ',', $orders_by ) : $orders_by;

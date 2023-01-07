@@ -39,6 +39,9 @@ defined( 'ABSPATH' ) || exit;
  * @method static string get_table_name( ?string $table = null )
  * @method static string get_foreign_key_constant_name( string $table1, string $table2 )
  * @method static QueryBuilder get_query_builder
+ * @method array get_pagination_and_order_data( array $args )
+ * @method string get_order_by( array $args )
+ * @method int calculate_offset( int $current_page = 1, int $per_page = 0 )
  *
  * @package Stackonet\WP\Framework\Abstracts
  */
