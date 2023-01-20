@@ -13,6 +13,13 @@ trait ApiCrudOperations {
 	use ApiResponse, ApiUtils, ApiPermissionChecker;
 
 	/**
+	 * List of capabilities based on the request method.
+	 *
+	 * @var array
+	 */
+	protected $exclude_operations = [];
+
+	/**
 	 * Get store class
 	 *
 	 * @return DataStoreInterface
@@ -23,7 +30,24 @@ trait ApiCrudOperations {
 	abstract public function prepare_response_for_collection( $response );
 
 	abstract public function get_context_param( $args = array() );
+
 	/** ==== End - Methods from \WP_REST_Controller::class ==== **/
+
+	/**
+	 * Check if REST operation is allowed
+	 *
+	 * @param  string  $operation  The operation name.
+	 *
+	 * @return bool
+	 */
+	protected function is_operation_allowed( string $operation ): bool {
+		$operations = [ 'read_items', 'read_item', 'create', 'update', 'delete', 'trash', 'restore', 'batch' ];
+		if ( in_array( $operation, $operations, true ) ) {
+			return ! in_array( $operation, $this->exclude_operations, true );
+		}
+
+		return false;
+	}
 
 	/**
 	 * Registers the routes for the objects of the controller.
@@ -37,136 +61,154 @@ trait ApiCrudOperations {
 			return;
 		}
 
-		register_rest_route(
-			$namespace,
-			$rest_base,
-			[
-				[
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_items' ],
-					'args'                => $this->get_collection_params(),
-					'permission_callback' => [ $this, 'get_items_permissions_check' ],
-				],
-				[
-					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ $this, 'create_item' ],
-					'permission_callback' => [ $this, 'create_item_permissions_check' ],
-				],
-			]
-		);
+		$args = [];
+		if ( $this->is_operation_allowed( 'read_items' ) ) {
+			$args[] = [
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_items' ],
+				'args'                => $this->get_collection_params(),
+				'permission_callback' => [ $this, 'get_items_permissions_check' ],
+			];
+		}
+		if ( $this->is_operation_allowed( 'create' ) ) {
+			$args[] = [
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'create_item' ],
+				'permission_callback' => [ $this, 'create_item_permissions_check' ],
+			];
+		}
 
-		register_rest_route(
-			$namespace,
-			$rest_base . '/(?P<id>\d+)',
-			[
-				'args' => [
-					'id' => [
-						'description'       => __( 'Item unique id.' ),
-						'type'              => 'integer',
-						'sanitize_callback' => 'absint',
-						'validate_callback' => 'rest_validate_request_arg',
-						'minimum'           => 1,
-					],
-				],
-				[
-					'methods'             => WP_REST_Server::READABLE,
-					'callback'            => [ $this, 'get_item' ],
-					'permission_callback' => [ $this, 'get_item_permissions_check' ],
-				],
-				[
-					'methods'             => WP_REST_Server::EDITABLE,
-					'callback'            => [ $this, 'update_item' ],
-					'permission_callback' => [ $this, 'update_item_permissions_check' ],
-				],
-				[
-					'methods'             => WP_REST_Server::DELETABLE,
-					'callback'            => [ $this, 'delete_item' ],
-					'permission_callback' => [ $this, 'delete_item_permissions_check' ],
-				],
-			]
-		);
+		if ( count( $args ) ) {
+			register_rest_route( $namespace, $rest_base, $args );
+		}
 
-		register_rest_route(
-			$namespace,
-			$rest_base . '/(?P<id>\d+)/trash',
-			[
-				[
-					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ $this, 'trash_item' ],
-					'permission_callback' => [ $this, 'update_item_permissions_check' ],
-					'args'                => [
-						'id' => [
-							'description'       => __( 'Item unique id.' ),
-							'type'              => 'integer',
-							'sanitize_callback' => 'absint',
-							'validate_callback' => 'rest_validate_request_arg',
-							'minimum'           => 1,
-						],
-					],
+		$args2 = [
+			'args' => [
+				'id' => [
+					'description'       => 'Item unique id.',
+					'type'              => 'integer',
+					'sanitize_callback' => 'absint',
+					'validate_callback' => 'rest_validate_request_arg',
+					'minimum'           => 1,
 				],
-			]
-		);
+			],
+		];
 
-		register_rest_route(
-			$namespace,
-			$rest_base . '/(?P<id>\d+)/restore',
-			[
+		if ( $this->is_operation_allowed( 'read_item' ) ) {
+			$args2[] = [
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_item' ],
+				'permission_callback' => [ $this, 'get_item_permissions_check' ],
+			];
+		}
+
+		if ( $this->is_operation_allowed( 'update' ) ) {
+			$args2[] = [
+				'methods'             => WP_REST_Server::EDITABLE,
+				'callback'            => [ $this, 'update_item' ],
+				'permission_callback' => [ $this, 'update_item_permissions_check' ],
+			];
+		}
+
+		if ( $this->is_operation_allowed( 'delete' ) ) {
+			$args2[] = [
+				'methods'             => WP_REST_Server::DELETABLE,
+				'callback'            => [ $this, 'delete_item' ],
+				'permission_callback' => [ $this, 'delete_item_permissions_check' ],
+			];
+		}
+
+		if ( count( $args2 ) > 1 ) {
+			register_rest_route( $namespace, $rest_base . '/(?P<id>\d+)', $args2 );
+		}
+
+		if ( $this->is_operation_allowed( 'trash' ) ) {
+			register_rest_route(
+				$namespace,
+				$rest_base . '/(?P<id>\d+)/trash',
 				[
-					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ $this, 'restore_item' ],
-					'permission_callback' => [ $this, 'update_item_permissions_check' ],
-					'args'                => [
-						'id' => [
-							'description'       => __( 'Item unique id.' ),
-							'type'              => 'integer',
-							'sanitize_callback' => 'absint',
-							'validate_callback' => 'rest_validate_request_arg',
-							'minimum'           => 1,
+					[
+						'methods'             => WP_REST_Server::CREATABLE,
+						'callback'            => [ $this, 'trash_item' ],
+						'permission_callback' => [ $this, 'update_item_permissions_check' ],
+						'args'                => [
+							'id' => [
+								'description'       => 'Item unique id.',
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+								'validate_callback' => 'rest_validate_request_arg',
+								'minimum'           => 1,
+							],
 						],
 					],
-				],
-			]
-		);
+				]
+			);
+		}
 
-		register_rest_route(
-			$namespace,
-			$rest_base . '/batch',
-			[
+		if ( $this->is_operation_allowed( 'restore' ) ) {
+			register_rest_route(
+				$namespace,
+				$rest_base . '/(?P<id>\d+)/restore',
 				[
-					'methods'             => WP_REST_Server::CREATABLE,
-					'callback'            => [ $this, 'batch_operation' ],
-					'args'                => [
-						'create'  => [
-							'type'              => 'array',
-							'validate_callback' => 'rest_validate_request_arg',
-						],
-						'update'  => [
-							'type'              => 'array',
-							'validate_callback' => 'rest_validate_request_arg',
-						],
-						'trash'   => [
-							'type'              => 'array',
-							'validate_callback' => 'rest_validate_request_arg',
-						],
-						'restore' => [
-							'type'              => 'array',
-							'validate_callback' => 'rest_validate_request_arg',
-						],
-						'delete'  => [
-							'type'              => 'array',
-							'validate_callback' => 'rest_validate_request_arg',
+					[
+						'methods'             => WP_REST_Server::CREATABLE,
+						'callback'            => [ $this, 'restore_item' ],
+						'permission_callback' => [ $this, 'update_item_permissions_check' ],
+						'args'                => [
+							'id' => [
+								'description'       => __( 'Item unique id.' ),
+								'type'              => 'integer',
+								'sanitize_callback' => 'absint',
+								'validate_callback' => 'rest_validate_request_arg',
+								'minimum'           => 1,
+							],
 						],
 					],
-					'permission_callback' => [ $this, 'batch_operation_permissions_check' ],
-				],
-			]
-		);
+				]
+			);
+		}
+
+		if ( $this->is_operation_allowed( 'batch' ) ) {
+			register_rest_route(
+				$namespace,
+				$rest_base . '/batch',
+				[
+					[
+						'methods'             => WP_REST_Server::CREATABLE,
+						'callback'            => [ $this, 'batch_operation' ],
+						'args'                => [
+							'create'  => [
+								'type'              => 'array',
+								'validate_callback' => 'rest_validate_request_arg',
+							],
+							'update'  => [
+								'type'              => 'array',
+								'validate_callback' => 'rest_validate_request_arg',
+							],
+							'trash'   => [
+								'type'              => 'array',
+								'validate_callback' => 'rest_validate_request_arg',
+							],
+							'restore' => [
+								'type'              => 'array',
+								'validate_callback' => 'rest_validate_request_arg',
+							],
+							'delete'  => [
+								'type'              => 'array',
+								'validate_callback' => 'rest_validate_request_arg',
+							],
+						],
+						'permission_callback' => [ $this, 'batch_operation_permissions_check' ],
+					],
+				]
+			);
+		}
 	}
 
 	/**
 	 * Prepares one item for create or update operation.
 	 *
-	 * @param WP_REST_Request $request Request object.
+	 * @param  WP_REST_Request  $request  Request object.
 	 *
 	 * @return mixed|WP_Error The prepared item, or WP_Error object on failure.
 	 */
@@ -177,7 +219,7 @@ trait ApiCrudOperations {
 	/**
 	 * Retrieves a collection of items.
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @param  WP_REST_Request  $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -205,7 +247,7 @@ trait ApiCrudOperations {
 	/**
 	 * Creates one item from the collection.
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @param  WP_REST_Request  $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -224,7 +266,7 @@ trait ApiCrudOperations {
 	/**
 	 * Retrieves one item from the collection.
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @param  WP_REST_Request  $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -241,7 +283,7 @@ trait ApiCrudOperations {
 	/**
 	 * Updates one item from the collection.
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @param  WP_REST_Request  $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -266,7 +308,7 @@ trait ApiCrudOperations {
 	/**
 	 * Deletes one item from the collection.
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @param  WP_REST_Request  $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -285,7 +327,7 @@ trait ApiCrudOperations {
 	/**
 	 * Trash one item from the collection.
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @param  WP_REST_Request  $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -306,7 +348,7 @@ trait ApiCrudOperations {
 	/**
 	 * Restore one item from the trash collection.
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
+	 * @param  WP_REST_Request  $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -327,7 +369,7 @@ trait ApiCrudOperations {
 	/**
 	 * Batch operation
 	 *
-	 * @param WP_REST_Request $request
+	 * @param  WP_REST_Request  $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */

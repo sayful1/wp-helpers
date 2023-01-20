@@ -1,3 +1,8 @@
+#### 1.9.4
+
+* Update `Stackonet\WP\Framework\Traits\ApiPermissionChecker` class to list capabilities for operation.
+* Update `Stackonet\WP\Framework\Traits\ApiCrudOperations` class by adding functionality to exclude operations.
+
 #### 1.9.3
 
 * Update `DataStoreBase` class to access `get_pagination_and_order_data` and `get_order_by` methods.
