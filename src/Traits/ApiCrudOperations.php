@@ -36,7 +36,7 @@ trait ApiCrudOperations {
 	/**
 	 * Check if REST operation is allowed
 	 *
-	 * @param  string  $operation  The operation name.
+	 * @param  string $operation  The operation name.
 	 *
 	 * @return bool
 	 */
@@ -156,7 +156,7 @@ trait ApiCrudOperations {
 						'permission_callback' => [ $this, 'update_item_permissions_check' ],
 						'args'                => [
 							'id' => [
-								'description'       => __( 'Item unique id.' ),
+								'description'       => 'Item unique id.',
 								'type'              => 'integer',
 								'sanitize_callback' => 'absint',
 								'validate_callback' => 'rest_validate_request_arg',
@@ -208,7 +208,7 @@ trait ApiCrudOperations {
 	/**
 	 * Prepares one item for create or update operation.
 	 *
-	 * @param  WP_REST_Request  $request  Request object.
+	 * @param  WP_REST_Request $request  Request object.
 	 *
 	 * @return mixed|WP_Error The prepared item, or WP_Error object on failure.
 	 */
@@ -217,9 +217,39 @@ trait ApiCrudOperations {
 	}
 
 	/**
+	 * Prepares the collection item for the REST response.
+	 *
+	 * @param  mixed|Data $item  The collection item.
+	 *
+	 * @return array|mixed Response object on success.
+	 */
+	public function prepare_collection_item_for_response( $item ) {
+		if ( $item instanceof Data ) {
+			return $item->to_array();
+		}
+
+		return $item;
+	}
+
+	/**
+	 * Prepares the collection item for the REST response.
+	 *
+	 * @param  mixed|Data $item  The collection item.
+	 *
+	 * @return array|mixed Response object on success.
+	 */
+	public function prepare_single_item_for_response( $item ) {
+		if ( $item instanceof Data ) {
+			return $item->to_array();
+		}
+
+		return $item;
+	}
+
+	/**
 	 * Retrieves a collection of items.
 	 *
-	 * @param  WP_REST_Request  $request  Full details about the request.
+	 * @param  WP_REST_Request $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -232,7 +262,9 @@ trait ApiCrudOperations {
 		$count      = is_numeric( $count ) ? $count : 0;
 		$pagination = static::get_pagination_data( $count, $per_page, $page );
 
-		$response = new WP_REST_Response(
+		$items = array_map( [ $this, 'prepare_collection_item_for_response' ], $items );
+
+		return $this->respondOK(
 			[
 				'items'      => $items,
 				'pagination' => $pagination,
@@ -240,14 +272,12 @@ trait ApiCrudOperations {
 			]
 		);
 
-		return $this->respondOK( $this->prepare_response_for_collection( $response ) );
-
 	}
 
 	/**
 	 * Creates one item from the collection.
 	 *
-	 * @param  WP_REST_Request  $request  Full details about the request.
+	 * @param  WP_REST_Request $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -266,7 +296,7 @@ trait ApiCrudOperations {
 	/**
 	 * Retrieves one item from the collection.
 	 *
-	 * @param  WP_REST_Request  $request  Full details about the request.
+	 * @param  WP_REST_Request $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -277,13 +307,13 @@ trait ApiCrudOperations {
 			return $this->respondNotFound( null, 'No item found.' );
 		}
 
-		return $this->respondOK( $item );
+		return $this->respondOK( $this->prepare_single_item_for_response( $item ) );
 	}
 
 	/**
 	 * Updates one item from the collection.
 	 *
-	 * @param  WP_REST_Request  $request  Full details about the request.
+	 * @param  WP_REST_Request $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -308,7 +338,7 @@ trait ApiCrudOperations {
 	/**
 	 * Deletes one item from the collection.
 	 *
-	 * @param  WP_REST_Request  $request  Full details about the request.
+	 * @param  WP_REST_Request $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -327,7 +357,7 @@ trait ApiCrudOperations {
 	/**
 	 * Trash one item from the collection.
 	 *
-	 * @param  WP_REST_Request  $request  Full details about the request.
+	 * @param  WP_REST_Request $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -348,7 +378,7 @@ trait ApiCrudOperations {
 	/**
 	 * Restore one item from the trash collection.
 	 *
-	 * @param  WP_REST_Request  $request  Full details about the request.
+	 * @param  WP_REST_Request $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -369,7 +399,7 @@ trait ApiCrudOperations {
 	/**
 	 * Batch operation
 	 *
-	 * @param  WP_REST_Request  $request  Full details about the request.
+	 * @param  WP_REST_Request $request  Full details about the request.
 	 *
 	 * @return WP_REST_Response
 	 */

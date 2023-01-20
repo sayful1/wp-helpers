@@ -1,7 +1,11 @@
+#### 1.9.5
+
+* Update `Stackonet\WP\Framework\Traits\ApiCrudOperations` class by adding `prepare_collection_item_for_response` to
+  format collection item for response and `prepare_single_item_for_response` to format single item for response.
+
 #### 1.9.4
 
 * Update `Stackonet\WP\Framework\Traits\ApiPermissionChecker` class to list capabilities for operation.
-* Update `Stackonet\WP\Framework\Traits\ApiCrudOperations` class by adding functionality to exclude operations.
 
 #### 1.9.3
 
