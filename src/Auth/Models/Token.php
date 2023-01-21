@@ -1,6 +1,6 @@
 <?php
 
-namespace Stackonet\WP\Framework\Auth;
+namespace Stackonet\WP\Framework\Auth\Models;
 
 use Stackonet\WP\Framework\Abstracts\DataStoreBase;
 use WP_Error;

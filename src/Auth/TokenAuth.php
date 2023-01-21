@@ -4,6 +4,8 @@ namespace Stackonet\WP\Framework\Auth;
 
 use DateTime;
 use DateTimeZone;
+use Stackonet\WP\Framework\Auth\Admin\Admin;
+use Stackonet\WP\Framework\Auth\Models\Token;
 use WP_Error;
 
 /**

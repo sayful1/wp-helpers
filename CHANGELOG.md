@@ -1,3 +1,7 @@
+#### 1.9.6
+
+* Add functionality for token based authentication.
+
 #### 1.9.5
 
 * Update `Stackonet\WP\Framework\Traits\ApiCrudOperations` class by adding `prepare_collection_item_for_response` to

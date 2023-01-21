@@ -2,7 +2,7 @@
 
 namespace Stackonet\WP\Framework\Auth\Admin;
 
-use Stackonet\WP\Framework\Auth\Token;
+use Stackonet\WP\Framework\Auth\Models\Token;
 use WP_List_Table;
 
 if ( ! class_exists( \WP_List_Table::class ) ) {

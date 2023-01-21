@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Stackonet WP Helper
  * Description: A powerful WordPress plugin to extend functionality to your WordPress site.
- * Version: 1.7.0
+ * Version: 1.9.6
  * Author: Stackonet Services (Pvt.) Ltd.
  * Author URI: https://stackonet.com
  * Requires at least: 5.3
@@ -16,4 +16,8 @@
 defined( 'ABSPATH' ) || exit;
 
 require dirname( __FILE__ ) . '/src/autoload.php';
-require dirname( __FILE__ ) . '/examples/autoload.php';
+
+// Load example features only if the plugin is in development mode.
+if ( in_array( wp_get_environment_type(), [ 'local', 'development' ], true ) ) {
+	require dirname( __FILE__ ) . '/examples/autoload.php';
+}

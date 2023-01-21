@@ -1,8 +1,8 @@
 <?php
 
-namespace Stackonet\WP\Framework\Auth;
+namespace Stackonet\WP\Framework\Auth\Admin;
 
-use Stackonet\WP\Framework\Auth\Admin\TokenListTable;
+use Stackonet\WP\Framework\Auth\Models\Token;
 
 /**
  * Admin class
