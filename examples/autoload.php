@@ -5,6 +5,7 @@ use Stackonet\WP\Examples\Testimonial\TestimonialManager;
 use Stackonet\WP\Examples\WordPressCore\MailTrap;
 use Stackonet\WP\Examples\WordPressCore\MetaboxTest;
 use Stackonet\WP\Examples\WordPressCore\SettingPage;
+use Stackonet\WP\Framework\Auth\TokenAuth;
 
 // If this file is called directly, abort.
 defined( 'ABSPATH' ) || exit;
@@ -44,5 +45,6 @@ add_action(
 		MailTrap::init();
 		SettingPage::init()->add_settings_page();
 		MetaboxTest::init();
+		TokenAuth::init();
 	}
 );
