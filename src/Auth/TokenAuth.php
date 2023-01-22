@@ -6,6 +6,10 @@ use DateTime;
 use DateTimeZone;
 use Stackonet\WP\Framework\Auth\Admin\Admin;
 use Stackonet\WP\Framework\Auth\Models\Token;
+use Stackonet\WP\Framework\Auth\REST\EmailAuthController;
+use Stackonet\WP\Framework\Auth\REST\OtpAuthController;
+use Stackonet\WP\Framework\Auth\REST\UserController;
+use Stackonet\WP\Framework\Auth\REST\WebLoginController;
 use WP_Error;
 
 /**
@@ -52,6 +56,11 @@ class TokenAuth {
 			add_action( 'personal_options_update', [ Admin::class, 'save_option' ] );
 			add_action( 'edit_user_profile_update', [ Admin::class, 'save_option' ] );
 			add_action( 'wp_ajax_revoke_auth_token', [ Admin::class, 'revoke_auth_token' ] );
+
+			WebLoginController::init();
+			UserController::init();
+			OtpAuthController::init();
+			EmailAuthController::init();
 		}
 
 		return self::$instance;
