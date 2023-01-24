@@ -16,7 +16,7 @@ class SmsOtpAuth {
 	/**
 	 * Get user id
 	 *
-	 * @param  string|mixed  $number  The phone number in E164 format.
+	 * @param  string|mixed $number  The phone number in E164 format.
 	 *
 	 * @return  int
 	 */
@@ -24,13 +24,13 @@ class SmsOtpAuth {
 		global $wpdb;
 		$abs_number = intval( $number );
 		$sql        = "SELECT {$wpdb->users}.ID AS user_id FROM {$wpdb->users}";
-		$sql        .= " INNER JOIN {$wpdb->usermeta} ON {$wpdb->users}.ID = {$wpdb->usermeta}.user_id";
-		$sql        .= ' WHERE 1 = 1 AND';
-		$sql        .= $wpdb->prepare( " ({$wpdb->users}.user_login = %s)", $abs_number );
-		$sql        .= $wpdb->prepare( " OR ({$wpdb->users}.user_login = %s)", $number );
-		$sql        .= $wpdb->prepare( " OR ({$wpdb->users}.user_email = %s)", $abs_number );
-		$sql        .= $wpdb->prepare( " OR ({$wpdb->users}.user_email = %s)", $number );
-		$sql        .= $wpdb->prepare(
+		$sql       .= " INNER JOIN {$wpdb->usermeta} ON {$wpdb->users}.ID = {$wpdb->usermeta}.user_id";
+		$sql       .= ' WHERE 1 = 1 AND';
+		$sql       .= $wpdb->prepare( " ({$wpdb->users}.user_login = %s)", $abs_number );
+		$sql       .= $wpdb->prepare( " OR ({$wpdb->users}.user_login = %s)", $number );
+		$sql       .= $wpdb->prepare( " OR ({$wpdb->users}.user_email = %s)", $abs_number );
+		$sql       .= $wpdb->prepare( " OR ({$wpdb->users}.user_email = %s)", $number );
+		$sql       .= $wpdb->prepare(
 			" OR ({$wpdb->usermeta}.meta_key = %s AND {$wpdb->usermeta}.meta_value = %s)",
 			static::get_meta_key(),
 			$number
@@ -44,8 +44,8 @@ class SmsOtpAuth {
 	/**
 	 * Send OTP
 	 *
-	 * @param  string|mixed  $phone  The phone number in E164 format.
-	 * @param  int|string  $otp  The OTP to be sent.
+	 * @param  string|mixed $phone  The phone number in E164 format.
+	 * @param  int|string   $otp  The OTP to be sent.
 	 *
 	 * @return bool|\WP_Error
 	 */
@@ -57,7 +57,7 @@ class SmsOtpAuth {
 			return new \WP_Error( 'invalid_otp_provider', 'Invalid OTP provider' );
 		}
 
-		$text = '{{otp_number}} is your verification code for {{blogname}}. ';
+		$text  = '{{otp_number}} is your verification code for {{blogname}}. ';
 		$text .= 'Please do not share this with anyone. ';
 		$text .= '{{blogname}} will never call to confirm your verification code.';
 
@@ -76,8 +76,8 @@ class SmsOtpAuth {
 	/**
 	 * Validate OTP
 	 *
-	 * @param  string  $phone_number  The phone number.
-	 * @param  int  $otp  The otp.
+	 * @param  string $phone_number  The phone number.
+	 * @param  int    $otp  The otp.
 	 *
 	 * @return bool
 	 */
@@ -93,7 +93,7 @@ class SmsOtpAuth {
 	/**
 	 * Generate OTP data
 	 *
-	 * @param  string  $number  The phone number.
+	 * @param  string $number  The phone number.
 	 * @param  array  $params  Additional parameters.
 	 *
 	 * @return array|mixed
@@ -126,7 +126,7 @@ class SmsOtpAuth {
 	/**
 	 * Get phone number
 	 *
-	 * @param  int  $user_id  The user id.
+	 * @param  int $user_id  The user id.
 	 *
 	 * @return string
 	 */
@@ -139,8 +139,8 @@ class SmsOtpAuth {
 	/**
 	 * Update phone number
 	 *
-	 * @param  int  $user_id  The user id.
-	 * @param  string  $phone_number  The phone number.
+	 * @param  int    $user_id  The user id.
+	 * @param  string $phone_number  The phone number.
 	 *
 	 * @return bool
 	 */
@@ -153,7 +153,7 @@ class SmsOtpAuth {
 	/**
 	 * Delete phone number
 	 *
-	 * @param  int  $user_id  The user id.
+	 * @param  int $user_id  The user id.
 	 *
 	 * @return bool
 	 */

@@ -159,7 +159,7 @@ class MetaboxApi {
 	/**
 	 * Set panels
 	 *
-	 * @param array $panels Array of panels
+	 * @param array $panels Array of panels.
 	 *
 	 * @return static
 	 */
@@ -203,7 +203,7 @@ class MetaboxApi {
 	/**
 	 * Set sections
 	 *
-	 * @param array $sections Array of sections
+	 * @param array $sections Array of sections.
 	 *
 	 * @return static
 	 */
@@ -247,7 +247,7 @@ class MetaboxApi {
 	/**
 	 * Set fields
 	 *
-	 * @param array $fields Array of fields
+	 * @param array $fields Array of fields.
 	 *
 	 * @return static
 	 */

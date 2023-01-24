@@ -78,9 +78,9 @@ class SocialAuthProvider extends DatabaseModel {
 	/**
 	 * Get provider info
 	 *
-	 * @param  string  $provider  Provider name.
-	 * @param  string  $provider_id  Provider ID.
-	 * @param  int  $user_id  User ID.
+	 * @param  string $provider  Provider name.
+	 * @param  string $provider_id  Provider ID.
+	 * @param  int    $user_id  User ID.
 	 *
 	 * @return ArrayObject|static
 	 */
@@ -88,6 +88,7 @@ class SocialAuthProvider extends DatabaseModel {
 		global $wpdb;
 		$table = ( new static() )->get_table_name();
 		$sql   = $wpdb->prepare(
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			"SELECT * FROM {$table} WHERE provider = %s AND provider_id = %s",
 			$provider,
 			sha1( $provider_id )
@@ -106,15 +107,16 @@ class SocialAuthProvider extends DatabaseModel {
 	/**
 	 * Find for user
 	 *
-	 * @param  int  $user_id  User ID.
-	 * @param  string|null  $provider  Provider name.
+	 * @param  int         $user_id  User ID.
+	 * @param  string|null $provider  Provider name.
 	 *
 	 * @return static[]|array
 	 */
 	public static function find_for_user( int $user_id, ?string $provider = null ): array {
 		global $wpdb;
 		$table = ( new static() )->get_table_name();
-		$sql   = $wpdb->prepare( "SELECT * FROM {$table} WHERE user_id = %d", $user_id );
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$sql = $wpdb->prepare( "SELECT * FROM {$table} WHERE user_id = %d", $user_id );
 
 		if ( ! empty( $provider ) ) {
 			$sql .= $wpdb->prepare( ' AND provider = %s', $provider );
@@ -133,7 +135,7 @@ class SocialAuthProvider extends DatabaseModel {
 	/**
 	 * Create or update a social auth provider
 	 *
-	 * @param  array  $data  The data.
+	 * @param  array $data  The data.
 	 *
 	 * @return int
 	 */
@@ -153,7 +155,7 @@ class SocialAuthProvider extends DatabaseModel {
 	/**
 	 * Unlink a social auth provider
 	 *
-	 * @param  array  $data  The data.
+	 * @param  array $data  The data.
 	 *
 	 * @return bool
 	 */
@@ -169,8 +171,8 @@ class SocialAuthProvider extends DatabaseModel {
 	/**
 	 * Find user by provider and provider id
 	 *
-	 * @param  string|mixed  $provider  Provider name.
-	 * @param  string|mixed  $provider_unique_id  Provider unique id.
+	 * @param  string|mixed $provider  Provider name.
+	 * @param  string|mixed $provider_unique_id  Provider unique id.
 	 *
 	 * @return WP_Error|WP_User
 	 */
@@ -198,14 +200,15 @@ class SocialAuthProvider extends DatabaseModel {
 	/**
 	 * Get providers
 	 *
-	 * @param  string|mixed  $email  Email address.
+	 * @param  string|mixed $email  Email address.
 	 *
 	 * @return bool
 	 */
 	public static function email_exists( $email ): bool {
 		global $wpdb;
-		$table = ( new static() )->get_table_name();
-		$sql   = $wpdb->prepare( "SELECT * FROM $table WHERE email_address = %s", $email );
+		$table = static::get_table_name();
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$sql = $wpdb->prepare( "SELECT * FROM $table WHERE email_address = %s", $email );
 
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		$result = $wpdb->get_row( $sql, ARRAY_A );
@@ -244,9 +247,9 @@ class SocialAuthProvider extends DatabaseModel {
 		$version = get_option( 'users_social_auth_provider_db_version', '0.1.0' );
 		if ( version_compare( $version, '1.0.0', '<' ) ) {
 			$constant_name = $self->get_foreign_key_constant_name( $table_name, $wpdb->users );
-			$sql           = "ALTER TABLE `{$table_name}` ADD CONSTRAINT `{$constant_name}` FOREIGN KEY (`user_id`)";
-			$sql           .= " REFERENCES `{$wpdb->users}`(`ID`) ON DELETE CASCADE ON UPDATE CASCADE;";
-			$wpdb->query( $sql );
+			$sql           = "ALTER TABLE `$table_name` ADD CONSTRAINT `$constant_name` FOREIGN KEY (`user_id`)";
+			$sql          .= " REFERENCES `$wpdb->users`(`ID`) ON DELETE CASCADE ON UPDATE CASCADE;";
+			$wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 			update_option( 'users_social_auth_provider_db_version', '1.0.0', false );
 		}

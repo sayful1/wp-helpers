@@ -50,7 +50,7 @@ class UserController extends BaseController {
 	/**
 	 * Get user profile data
 	 *
-	 * @param  WP_REST_Request  $request  The details of request.
+	 * @param  WP_REST_Request $request  The details of request.
 	 *
 	 * @return WP_REST_Response
 	 */

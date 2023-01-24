@@ -108,6 +108,9 @@ class Data implements ArrayAccess, JsonSerializable {
 	 * @return array
 	 */
 	public function to_array(): array {
+		if ( count( $this->get_changes() ) ) {
+			return array_replace_recursive( $this->get_data(), $this->get_changes() );
+		}
 		return $this->get_data();
 	}
 

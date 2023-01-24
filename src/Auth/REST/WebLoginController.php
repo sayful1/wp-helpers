@@ -56,7 +56,7 @@ class WebLoginController extends BaseController {
 	/**
 	 * Logged the user in
 	 *
-	 * @param  WP_REST_Request  $request  The details of request.
+	 * @param  WP_REST_Request $request  The details of request.
 	 *
 	 * @return WP_REST_Response
 	 */

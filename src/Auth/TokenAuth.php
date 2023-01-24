@@ -81,7 +81,7 @@ class TokenAuth {
 	/**
 	 * Add CORS support to the request.
 	 *
-	 * @param  array  $allow_headers
+	 * @param  array $allow_headers
 	 *
 	 * @return array
 	 */
@@ -102,7 +102,7 @@ class TokenAuth {
 	 * This is our Middleware to try to authenticate the user according to the
 	 * token send.
 	 *
-	 * @param  int|bool  $user_id  Logged User ID.
+	 * @param  int|bool $user_id  Logged User ID.
 	 *
 	 * @return int|bool
 	 */
@@ -159,7 +159,7 @@ class TokenAuth {
 	 * Filter to hook the rest_pre_dispatch, if this is an error in the request
 	 * send it, if there is no error just continue with the current request.
 	 *
-	 * @param  mixed  $result  The result.
+	 * @param  mixed $result  The result.
 	 *
 	 * @return mixed
 	 */
@@ -174,8 +174,8 @@ class TokenAuth {
 	/**
 	 * Generate token
 	 *
-	 * @param  string  $username  The user name.
-	 * @param  string  $password  The password.
+	 * @param  string $username  The user name.
+	 * @param  string $password  The password.
 	 *
 	 * @return array|WP_Error
 	 */
@@ -201,7 +201,7 @@ class TokenAuth {
 	 * Main validation function, this function try to get the Authentication
 	 * headers and decoded.
 	 *
-	 * @param  string|mixed  $token  The auth token.
+	 * @param  string|mixed $token  The auth token.
 	 *
 	 * @return array|WP_Error
 	 */

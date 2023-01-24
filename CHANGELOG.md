@@ -1,3 +1,8 @@
+#### 1.9.7
+
+* Fix issue `Stackonet\WP\Framework\Abstracts\Data::to_array()` method is not showing changed data unless
+  class `apply_changes` method.
+
 #### 1.9.6
 
 * Add functionality for token based authentication.

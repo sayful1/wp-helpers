@@ -85,7 +85,7 @@ class OtpAuthController extends BaseController {
 	/**
 	 * Generate OTP
 	 *
-	 * @param  WP_REST_Request  $request  The WP_REST_Request object.
+	 * @param  WP_REST_Request $request  The WP_REST_Request object.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -146,7 +146,7 @@ class OtpAuthController extends BaseController {
 	/**
 	 * Validate OTP
 	 *
-	 * @param  WP_REST_Request  $request  The WP_REST_Request object.
+	 * @param  WP_REST_Request $request  The WP_REST_Request object.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -192,7 +192,7 @@ class OtpAuthController extends BaseController {
 	/**
 	 * Registration new user
 	 *
-	 * @param  WP_REST_Request  $request  The WP_REST_Request object.
+	 * @param  WP_REST_Request $request  The WP_REST_Request object.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -267,7 +267,7 @@ class OtpAuthController extends BaseController {
 	/**
 	 * Link or unlink a phone number.
 	 *
-	 * @param  WP_REST_Request  $request  The WP_REST_Request object.
+	 * @param  WP_REST_Request $request  The WP_REST_Request object.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -301,7 +301,7 @@ class OtpAuthController extends BaseController {
 
 	/**
 	 * @param  string  $token
-	 * @param  WP_User  $user
+	 * @param  WP_User $user
 	 *
 	 * @return array
 	 */

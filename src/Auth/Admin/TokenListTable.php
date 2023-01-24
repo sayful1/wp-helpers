@@ -65,7 +65,7 @@ class TokenListTable extends WP_List_Table {
 	 * Generates content for a single row of the table
 	 *
 	 * @param  array  $item  The current item.
-	 * @param  string  $column_name  The current column name.
+	 * @param  string $column_name  The current column name.
 	 */
 	protected function column_default( $item, $column_name ) {
 		if ( in_array( $column_name, [ 'issued_at', 'expired_at', 'last_used_at' ], true ) ) {
@@ -83,7 +83,7 @@ class TokenListTable extends WP_List_Table {
 	/**
 	 * Handles the last ip column output.
 	 *
-	 * @param  array  $item  The current application password item.
+	 * @param  array $item  The current application password item.
 	 */
 	public function column_last_ip( $item ) {
 		if ( empty( $item['last_ip'] ) ) {
@@ -96,7 +96,7 @@ class TokenListTable extends WP_List_Table {
 	/**
 	 * Handles the revoke column output.
 	 *
-	 * @param  array  $item  The current application password item.
+	 * @param  array $item  The current application password item.
 	 *
 	 * @since 5.6.0
 	 */
@@ -124,7 +124,7 @@ class TokenListTable extends WP_List_Table {
 	/**
 	 * Generates custom table navigation to prevent conflicting nonces.
 	 *
-	 * @param  string  $which  The location of the bulk actions: 'top' or 'bottom'.
+	 * @param  string $which  The location of the bulk actions: 'top' or 'bottom'.
 	 *
 	 * @since 5.6.0
 	 */
@@ -145,22 +145,22 @@ class TokenListTable extends WP_List_Table {
 			'revoke_auth_token'
 		);
 		?>
-        <div class="tablenav <?php echo esc_attr( $which ); ?>">
+		<div class="tablenav <?php echo esc_attr( $which ); ?>">
 			<?php if ( 'bottom' === $which ) : ?>
-                <div class="alignright">
-                    <a class="button delete"
-                       href="<?php echo esc_url( $revoke_url ) ?>"><?php _e( 'Revoke all auth tokens' ); ?></a>
-                </div>
+				<div class="alignright">
+					<a class="button delete"
+					   href="<?php echo esc_url( $revoke_url ); ?>"><?php _e( 'Revoke all auth tokens' ); ?></a>
+				</div>
 			<?php endif; ?>
-            <div class="alignleft actions bulkactions">
+			<div class="alignleft actions bulkactions">
 				<?php $this->bulk_actions( $which ); ?>
-            </div>
+			</div>
 			<?php
 			$this->extra_tablenav( $which );
 			$this->pagination( $which );
 			?>
-            <br class="clear"/>
-        </div>
+			<br class="clear"/>
+		</div>
 		<?php
 	}
 }

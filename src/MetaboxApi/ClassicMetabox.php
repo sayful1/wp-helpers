@@ -74,25 +74,25 @@ class ClassicMetabox extends MetaboxApi {
 	 */
 	public function meta_box_script() {
 		?>
-        <script>
-            (function ($) {
-                if ('function' === typeof $.fn.tabs) {
-                    $("#shapla-metabox-tabs").tabs();
-                }
-                if ('function' === typeof $.fn.wpColorPicker) {
-                    $('.color-picker').wpColorPicker();
-                }
-            })(jQuery);
-        </script>
+		<script>
+			(function ($) {
+				if ('function' === typeof $.fn.tabs) {
+					$("#shapla-metabox-tabs").tabs();
+				}
+				if ('function' === typeof $.fn.wpColorPicker) {
+					$('.color-picker').wpColorPicker();
+				}
+			})(jQuery);
+		</script>
 		<?php
 	}
 
 	/**
 	 * Save the meta when the post is saved.
 	 *
-	 * @param int $post_id Post ID.
+	 * @param int     $post_id Post ID.
 	 * @param WP_Post $post Post object.
-	 * @param bool $update Whether this is an existing post being updated or not.
+	 * @param bool    $update Whether this is an existing post being updated or not.
 	 *
 	 * @return void
 	 */
@@ -206,7 +206,7 @@ class ClassicMetabox extends MetaboxApi {
 	 * Render Meta Box content.
 	 *
 	 * @param WP_Post $post The object for the current post/page.
-	 * @param array $fields The metabox fields.
+	 * @param array   $fields The metabox fields.
 	 */
 	public function meta_box_callback( $post, $fields ) {
 		if ( ! is_array( $fields ) ) {
@@ -236,7 +236,7 @@ class ClassicMetabox extends MetaboxApi {
 	 * @return string
 	 */
 	public function get_tab_content( array $values = [] ): string {
-		$html = '<div class="shapla-tabs-wrapper">';
+		$html  = '<div class="shapla-tabs-wrapper">';
 		$html .= '<div id="shapla-metabox-tabs" class="shapla-tabs">';
 
 		$html .= '<ul class="shapla-tabs-list">';
@@ -346,9 +346,9 @@ class ClassicMetabox extends MetaboxApi {
 	/**
 	 * Render field
 	 *
-	 * @param array $settings Field settings.
+	 * @param array  $settings Field settings.
 	 * @param string $name Field name.
-	 * @param mixed $value Field value.
+	 * @param mixed  $value Field value.
 	 *
 	 * @return string
 	 */

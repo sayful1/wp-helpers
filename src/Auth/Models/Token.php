@@ -19,7 +19,7 @@ class Token extends DataStoreBase {
 	/**
 	 * Get record by token
 	 *
-	 * @param  string  $token  The token to validate.
+	 * @param  string $token  The token to validate.
 	 *
 	 * @return array|null
 	 */
@@ -30,7 +30,7 @@ class Token extends DataStoreBase {
 	/**
 	 * Get existing token for a user, generate if not exists.
 	 *
-	 * @param  int  $user_id  The user id.
+	 * @param  int $user_id  The user id.
 	 *
 	 * @return string|WP_Error
 	 */
@@ -46,8 +46,8 @@ class Token extends DataStoreBase {
 	/**
 	 * Generate a new token for a user
 	 *
-	 * @param  int  $user_id  The user id.
-	 * @param  int  $month  The month. Default is 1. Max is 12.
+	 * @param  int $user_id  The user id.
+	 * @param  int $month  The month. Default is 1. Max is 12.
 	 *
 	 * @return string|WP_Error
 	 */
@@ -112,7 +112,7 @@ class Token extends DataStoreBase {
 		if ( false === $version ) {
 			$constant_name = $self->get_foreign_key_constant_name( $table, $wpdb->users );
 			$sql           = "ALTER TABLE `{$table}` ADD CONSTRAINT `{$constant_name}` FOREIGN KEY (`user_id`)";
-			$sql           .= " REFERENCES `{$wpdb->users}`(`ID`) ON DELETE CASCADE ON UPDATE CASCADE;";
+			$sql          .= " REFERENCES `{$wpdb->users}`(`ID`) ON DELETE CASCADE ON UPDATE CASCADE;";
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 			$wpdb->query( $sql );
 			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared

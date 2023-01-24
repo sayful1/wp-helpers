@@ -21,7 +21,7 @@ class User implements JsonSerializable {
 	/**
 	 * User constructor.
 	 *
-	 * @param  int|string|\stdClass|WP_User  $user  User ID, a WP_User object, or a user object from the DB.
+	 * @param  int|string|\stdClass|WP_User $user  User ID, a WP_User object, or a user object from the DB.
 	 */
 	public function __construct( $user = null ) {
 		$this->user = new WP_User( $user );

@@ -34,7 +34,7 @@ class TwilioClient extends RestClient implements OtpSmsProviderInterface {
 	/**
 	 * Get setting
 	 *
-	 * @param  string  $key  The setting key.
+	 * @param  string $key  The setting key.
 	 * @param  mixed  $default  The default value.
 	 *
 	 * @return false|mixed
@@ -59,8 +59,8 @@ class TwilioClient extends RestClient implements OtpSmsProviderInterface {
 	/**
 	 * Send OTP to phone number
 	 *
-	 * @param  string  $phone_e164  Phone number in E164 format.
-	 * @param  string  $message  The message to be sent.
+	 * @param  string $phone_e164  Phone number in E164 format.
+	 * @param  string $message  The message to be sent.
 	 *
 	 * @return array|WP_Error
 	 */

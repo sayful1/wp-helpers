@@ -426,7 +426,7 @@ abstract class PostTypeModel implements JsonSerializable {
 		}
 
 		if ( empty( $values ) ) {
-			$values = $_REQUEST;
+			$values = $_REQUEST; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 
 		$default = [
@@ -447,6 +447,8 @@ abstract class PostTypeModel implements JsonSerializable {
 			$value = $values[ $field_key ] ?? '';
 			if ( isset( $field['sanitize_callback'] ) && is_callable( $field['sanitize_callback'] ) ) {
 				$value = call_user_func( $field['sanitize_callback'], $value );
+			} else {
+				$value = Sanitize::deep( $value );
 			}
 
 			update_post_meta( $post->ID, $meta_key, $value );

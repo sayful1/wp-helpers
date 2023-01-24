@@ -75,7 +75,7 @@ class EmailAuthController extends BaseController {
 	/**
 	 * Generate OTP
 	 *
-	 * @param  WP_REST_Request  $request  The WP_REST_Request object.
+	 * @param  WP_REST_Request $request  The WP_REST_Request object.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -129,7 +129,7 @@ class EmailAuthController extends BaseController {
 	/**
 	 * Generate otp via email
 	 *
-	 * @param  WP_REST_Request  $request  The request details.
+	 * @param  WP_REST_Request $request  The request details.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -187,7 +187,7 @@ class EmailAuthController extends BaseController {
 	/**
 	 * Validate otp via email
 	 *
-	 * @param  WP_REST_Request  $request  The request details.
+	 * @param  WP_REST_Request $request  The request details.
 	 *
 	 * @return WP_REST_Response
 	 */
@@ -274,7 +274,7 @@ class EmailAuthController extends BaseController {
 	/**
 	 * Create new user.
 	 *
-	 * @param  WP_REST_Request  $request  The request details.
+	 * @param  WP_REST_Request $request  The request details.
 	 *
 	 * @return int|\WP_Error
 	 */

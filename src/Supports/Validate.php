@@ -144,9 +144,9 @@ class Validate {
 	 * Check if string length is greater than or equal to given int.
 	 * To check the size of a number, pass the optional number option.
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param mixed     $value The value to be validated.
 	 * @param float|int $min_value The minimum value to be validated against.
-	 * @param boolean $is_number If the value is a number.
+	 * @param boolean   $is_number If the value is a number.
 	 *
 	 * @return boolean
 	 */
@@ -165,9 +165,9 @@ class Validate {
 	 * Check if string length is less than or equal to given int.
 	 * To check the size of a number, pass the optional number option.
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param mixed         $value The value to be validated.
 	 * @param integer|float $max_value The maximum value to be validated against.
-	 * @param boolean $is_number If the value is a number.
+	 * @param boolean       $is_number If the value is a number.
 	 *
 	 * @return boolean
 	 */
@@ -300,7 +300,7 @@ class Validate {
 	 * @param mixed $phone_e164 The phone number in E164 format.
 	 * Format must be a number up to fifteen digits in length
 	 * Starting with a ‘+’ sign, country code (1 to 3 digits), subscriber number (max 12 digits).
-	 * @param int $min_length Minimum number length.
+	 * @param int   $min_length Minimum number length.
 	 *
 	 * @return bool
 	 */

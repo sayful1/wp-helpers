@@ -47,7 +47,7 @@ class AwsSnsClient implements OtpSmsProviderInterface {
 	/**
 	 * Get setting
 	 *
-	 * @param  string  $key  The setting key.
+	 * @param  string $key  The setting key.
 	 * @param  mixed  $default  The default value.
 	 *
 	 * @return false|mixed
@@ -94,8 +94,8 @@ class AwsSnsClient implements OtpSmsProviderInterface {
 	/**
 	 * Send OTP to phone number
 	 *
-	 * @param  string  $phone_e164  Phone number in E164 format.
-	 * @param  string  $message  The message to be sent.
+	 * @param  string $phone_e164  Phone number in E164 format.
+	 * @param  string $message  The message to be sent.
 	 *
 	 * @return Result|WP_Error
 	 */
@@ -108,7 +108,7 @@ class AwsSnsClient implements OtpSmsProviderInterface {
 					'PhoneNumber' => $phone_e164,
 				]
 			);
-		} catch ( SnsException|AwsException|Exception $e ) {
+		} catch ( SnsException | AwsException | Exception $e ) {
 			// output error message if fails.
 			Logger::log( $e->getAwsErrorMessage() );
 
