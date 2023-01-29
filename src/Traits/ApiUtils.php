@@ -135,6 +135,13 @@ trait ApiUtils {
 				'sanitize_callback' => 'sanitize_text_field',
 				'validate_callback' => 'rest_validate_request_arg',
 			],
+			'status'   => [
+				'description'       => 'A named status for the object.',
+				'type'              => 'string',
+				'default'           => 'publish',
+				'sanitize_callback' => 'sanitize_text_field',
+				'validate_callback' => 'rest_validate_request_arg',
+			],
 			'sort'     => [
 				'description'       => 'Sorting order. Example: title+DESC,author+ASC',
 				'type'              => 'string',

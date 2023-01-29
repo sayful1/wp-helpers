@@ -1,3 +1,7 @@
+#### 1.9.8
+
+* Update `Stackonet\WP\Framework\Traits\ApiCrudOperations::get_items()` class by fixing count issue
+
 #### 1.9.7
 
 * Fix issue `Stackonet\WP\Framework\Abstracts\Data::to_array()` method is not showing changed data unless
