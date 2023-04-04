@@ -1,3 +1,7 @@
+#### 1.9.9
+
+* Add option to map read record(s) from database into `Stackonet\WP\Framework\Abstracts\Data` class
+
 #### 1.9.8
 
 * Update `Stackonet\WP\Framework\Traits\ApiCrudOperations::get_items()` class by fixing count issue

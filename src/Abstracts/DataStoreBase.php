@@ -80,10 +80,17 @@ class DataStoreBase implements DataStoreInterface {
 	protected $per_page = 20;
 
 	/**
+	 * Data Model linked to store
+	 *
+	 * @var null
+	 */
+	protected $model = null;
+
+	/**
 	 * Get instance of the store
 	 *
-	 * @param string $table The table name.
-	 * @param array  $props The properties.
+	 * @param  string $table  The table name.
+	 * @param  array  $props  The properties.
 	 *
 	 * @return DataStoreBase|DataStoreInterface
 	 */
@@ -105,7 +112,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Method to create a new record
 	 *
-	 * @param array $data Array of data to be stored (optional).
+	 * @param  array $data  Array of data to be stored (optional).
 	 *
 	 * @return int The ID of the created record.
 	 */
@@ -126,7 +133,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Method to read record.
 	 *
-	 * @param int|array $data Primary key value to get single record. or array of arguments to get multiple records.
+	 * @param  int|array $data  Primary key value to get single record. or array of arguments to get multiple records.
 	 *
 	 * @return array|array[]
 	 */
@@ -141,7 +148,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Update data
 	 *
-	 * @param array $data The data to be updated.
+	 * @param  array $data  The data to be updated.
 	 *
 	 * @return bool
 	 */
@@ -183,7 +190,13 @@ class DataStoreBase implements DataStoreInterface {
 
 		$data_format = static::get_data_format_for_db( $table, $_data );
 
-		$is_updated = (bool) $wpdb->update( $table, $_data, [ $this->primary_key => $id ], $data_format, $this->primary_key_type );
+		$is_updated = (bool) $wpdb->update(
+			$table,
+			$_data,
+			[ $this->primary_key => $id ],
+			$data_format,
+			$this->primary_key_type
+		);
 		// Delete cache on update.
 		if ( $is_updated ) {
 			$this->delete_cache( $this->get_cache_key_for_single_item( $id ) );
@@ -195,7 +208,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Delete data
 	 *
-	 * @param int $id The id of the data to be deleted.
+	 * @param  int $id  The id of the data to be deleted.
 	 *
 	 * @return bool
 	 */
@@ -214,7 +227,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Send an item to trash
 	 *
-	 * @param int $id The id of the data to be trashed.
+	 * @param  int $id  The id of the data to be trashed.
 	 *
 	 * @return bool
 	 */
@@ -236,7 +249,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Restore an item from trash
 	 *
-	 * @param int $id The id of the data to be restored.
+	 * @param  int $id  The id of the data to be restored.
 	 *
 	 * @return bool
 	 */
@@ -254,8 +267,8 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Perform batch action
 	 *
-	 * @param string $action Batch action. Example: 'create', 'update', 'delete', 'trash', 'restore'.
-	 * @param array  $data The data for batch operation.
+	 * @param  string $action  Batch action. Example: 'create', 'update', 'delete', 'trash', 'restore'.
+	 * @param  array  $data  The data for batch operation.
 	 *
 	 * @return mixed
 	 */
@@ -271,7 +284,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Create multiple record
 	 *
-	 * @param array $data The data to be created.
+	 * @param  array $data  The data to be created.
 	 *
 	 * @return int[]
 	 */
@@ -308,7 +321,10 @@ class DataStoreBase implements DataStoreInterface {
 			unset( $columns_names[ $index ] );
 		}
 
-		$sql   = "INSERT INTO `{$table}` (" . implode( ', ', $columns_names ) . ") VALUES \n" . implode( ",\n", $values ) . ';';
+		$sql   = "INSERT INTO `{$table}` (" . implode( ', ', $columns_names ) . ") VALUES \n" . implode(
+			",\n",
+			$values
+		) . ';';
 		$query = $wpdb->query( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		// Update cache change.
@@ -332,7 +348,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Update multiple record
 	 *
-	 * @param array $data The data to be updated.
+	 * @param  array $data  The data to be updated.
 	 *
 	 * @return bool
 	 */
@@ -404,7 +420,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Delete multiple records
 	 *
-	 * @param array $data The ids of the data to be deleted.
+	 * @param  array $data  The ids of the data to be deleted.
 	 *
 	 * @return bool
 	 */
@@ -427,7 +443,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Batch trash items
 	 *
-	 * @param array $data The batch data to be trashed.
+	 * @param  array $data  The batch data to be trashed.
 	 *
 	 * @return bool
 	 */
@@ -456,7 +472,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Batch restore items
 	 *
-	 * @param array $data The batch data to be restored.
+	 * @param  array $data  The batch data to be restored.
 	 *
 	 * @return bool
 	 */
@@ -481,9 +497,9 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Find single item by primary key
 	 *
-	 * @param int $id The record primary id.
+	 * @param  int $id  The record primary id.
 	 *
-	 * @return false|array
+	 * @return false|array|Data
 	 */
 	public function find_single( $id ) {
 		global $wpdb;
@@ -505,13 +521,26 @@ class DataStoreBase implements DataStoreInterface {
 			$this->set_cache( $cache_key, $item );
 		}
 
-		return is_array( $item ) ? $item : false;
+		if ( is_array( $item ) || $item instanceof Data ) {
+			return $item;
+		}
+
+		return false;
 	}
 
 	/**
 	 * Find multiple records from database
 	 *
-	 * @param array $args The arguments for query.
+	 * @param  array $args  {
+	 * The arguments for query.
+	 *
+	 * @type int $page Current page number. Default: 1
+	 * @type int $per_page Number of result to fetch per query.
+	 * @type array $orders_by Array of [ ['field' => 'table_column', 'order' => 'ASC|DESC' ] ]
+	 * @type string $status The status to fetch for the query.
+	 * @type int $created_by The user id who created the record.
+	 * @type int[] $id__in Array of record id.
+	 * }
 	 *
 	 * @return array
 	 */
@@ -522,6 +551,7 @@ class DataStoreBase implements DataStoreInterface {
 		$cache_key = $this->get_cache_key_for_collection( $args );
 		$items     = $this->get_cache( $cache_key );
 		if ( false === $items ) {
+			$columns                   = static::get_columns_names( $table );
 			list( $per_page, $offset ) = $this->get_pagination_and_order_data( $args );
 			$order_by                  = $this->get_order_by( $args );
 			$status                    = $args[ $this->status ] ?? null;
@@ -529,6 +559,7 @@ class DataStoreBase implements DataStoreInterface {
 			$query = "SELECT * FROM {$table} WHERE 1=1";
 
 			if ( isset( $args[ $this->created_by ] ) && is_numeric( $args[ $this->created_by ] ) ) {
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 				$query .= $wpdb->prepare( " AND {$this->created_by} = %d", intval( $args[ $this->created_by ] ) );
 			}
 
@@ -537,12 +568,17 @@ class DataStoreBase implements DataStoreInterface {
 				$query  .= " AND {$this->primary_key} IN(" . implode( ',', $ids__in ) . ')';
 			}
 
-			if ( in_array( $this->deleted_at, static::get_columns_names( $table ), true ) ) {
+			if ( in_array( $this->deleted_at, $columns, true ) ) {
 				if ( 'trash' === $status ) {
 					$query .= " AND {$this->deleted_at} IS NOT NULL";
 				} else {
 					$query .= " AND {$this->deleted_at} IS NULL";
 				}
+			}
+
+			if ( in_array( $this->status, $columns, true ) && ! empty( $status ) && 'trash' !== $status ) {
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+				$query .= $wpdb->prepare( " AND {$this->status} = %s", $status );
 			}
 
 			$query .= " ORDER BY {$order_by}";
@@ -568,7 +604,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Count record from database
 	 *
-	 * @param array $args The optional arguments.
+	 * @param  array $args  The optional arguments.
 	 *
 	 * @return array {
 	 * Number of found records for each group.
@@ -592,7 +628,8 @@ class DataStoreBase implements DataStoreInterface {
 			if ( in_array( $this->deleted_at, $columns, true ) ) {
 				$sql .= " AND {$this->deleted_at} IS NULL";
 				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
-				$row             = $wpdb->get_row(
+				$row = $wpdb->get_row(
+				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 					"SELECT COUNT( * ) AS total_trash FROM {$table} WHERE {$this->deleted_at} IS NOT NULL",
 					ARRAY_A
 				);
@@ -628,7 +665,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Get table name
 	 *
-	 * @param string|null $table Table name.
+	 * @param  string|null $table  Table name.
 	 *
 	 * @return string
 	 */
@@ -644,8 +681,8 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Get foreign key constant name
 	 *
-	 * @param string $table1 One table name.
-	 * @param string $table2 Another table name.
+	 * @param  string $table1  One table name.
+	 * @param  string $table2  Another table name.
 	 *
 	 * @return string
 	 */
@@ -663,7 +700,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Serialize array and object data
 	 *
-	 * @param mixed $data The data to be serialized.
+	 * @param  mixed $data  The data to be serialized.
 	 *
 	 * @return string|int|float|bool|null
 	 */
@@ -674,7 +711,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Un-serialize value only if it was serialized.
 	 *
-	 * @param mixed $data Maybe un-serialized original, if is needed.
+	 * @param  mixed $data  Maybe un-serialized original, if is needed.
 	 *
 	 * @return mixed Un-serialized data can be any type.
 	 */
@@ -685,11 +722,11 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Format data read from database
 	 *
-	 * @param array $raw_data Non formatted data.
+	 * @param  array $raw_data  Non formatted data.
 	 *
-	 * @return array
+	 * @return array|Data
 	 */
-	public function format_item_for_output( array $raw_data ): array {
+	public function format_item_for_output( array $raw_data ) {
 		$table_name = $this->get_table_name();
 		$defaults   = static::get_default_data( $table_name );
 		$data       = [];
@@ -698,15 +735,27 @@ class DataStoreBase implements DataStoreInterface {
 			$data[ $column_name ] = $this->unserialize( $temp_data );
 		}
 
-		return static::format_data_by_type( $table_name, $data );
+		$final_data = static::format_data_by_type( $table_name, $data );
+
+		if ( ! empty( $this->model ) ) {
+			$model = new $this->model();
+			if ( $model instanceof Data ) {
+				$model->set_props( $final_data );
+				$model->set_object_read();
+			}
+
+			return $model;
+		}
+
+		return $final_data;
 	}
 
 	/**
 	 * Format item for database
 	 *
-	 * @param array       $data User provided data.
-	 * @param array       $defaults Default data. Previous data for existing record.
-	 * @param string|null $current_time Current datetime.
+	 * @param  array       $data  User provided data.
+	 * @param  array       $defaults  Default data. Previous data for existing record.
+	 * @param  string|null $current_time  Current datetime.
 	 *
 	 * @return array
 	 */
@@ -758,7 +807,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Get pagination and order data
 	 *
-	 * @param array $args Query args.
+	 * @param  array $args  Query args.
 	 *
 	 * @return array
 	 */
@@ -780,8 +829,8 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Calculate offset
 	 *
-	 * @param int $current_page Current page.
-	 * @param int $per_page Per page.
+	 * @param  int $current_page  Current page.
+	 * @param  int $per_page  Per page.
 	 *
 	 * @return int
 	 */
@@ -794,7 +843,7 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Get order_by data
 	 *
-	 * @param array $args Query args.
+	 * @param  array $args  Query args.
 	 *
 	 * @return string
 	 */
@@ -819,8 +868,16 @@ class DataStoreBase implements DataStoreInterface {
 				$order       = $order_by['order'];
 			} else {
 				$_order      = explode( ' ', trim( $order_by ) );
-				$column_name = ( isset( $_order[0] ) && in_array( $_order[0], $columns_names, true ) ) ? $_order[0] : '';
-				$order       = ( isset( $_order[1] ) && in_array( strtoupper( $_order[1] ), $valid_orders, true ) ) ? $_order[1] : '';
+				$column_name = ( isset( $_order[0] ) && in_array(
+					$_order[0],
+					$columns_names,
+					true
+				) ) ? $_order[0] : '';
+				$order       = ( isset( $_order[1] ) && in_array(
+					strtoupper( $_order[1] ),
+					$valid_orders,
+					true
+				) ) ? $_order[1] : '';
 			}
 			if ( $column_name || $order ) {
 				$final_order_by[] = $column_name . ' ' . $order;

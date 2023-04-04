@@ -48,7 +48,7 @@ class DataTest extends \WP_UnitTestCase {
 		$this->assertEquals( $dataFromDb['option_id'], $dataInstance->get_id() );
 		$this->assertEquals( '1.1.0', $dataInstance->get_prop( 'option_value' ) );
 		$this->assertEquals( [ 'option_value' => '1.1.0' ], $dataInstance->get_changes() );
-		$this->assertEquals( '1.0.1', $dataInstance->to_array()['option_value'] );
+		$this->assertEquals( '1.1.0', $dataInstance->to_array()['option_value'] );
 
 		$dataInstance->apply_changes();
 		$this->assertEquals( '1.1.0', $dataInstance->to_array()['option_value'] );
@@ -111,5 +111,19 @@ class DataTest extends \WP_UnitTestCase {
 
 		$this->instance->remove( 'prop10' );
 		$this->assertFalse( $this->instance->has( 'prop10' ) );
+	}
+
+	public function test_get_data() {
+		$dataFromDb   = [
+			'id'           => 3201,
+			'option_name'  => 'stackonet_support_ticket_table_version',
+			'option_value' => '1.0.1',
+			'autoload'     => 'yes',
+		];
+		$dataInstance = new Data();
+		$dataInstance->set_props( $dataFromDb );
+
+		$this->assertEquals( 3201, $dataInstance->get_id() );
+		$this->assertEquals( 3201, $dataInstance->get_data()['id'] );
 	}
 }

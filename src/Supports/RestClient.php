@@ -57,7 +57,7 @@ class RestClient {
 	/**
 	 * Class constructor.
 	 *
-	 * @param string|null $api_base_url API base URL.
+	 * @param  string|null $api_base_url  API base URL.
 	 */
 	public function __construct( ?string $api_base_url = null ) {
 		if ( filter_var( $api_base_url, FILTER_VALIDATE_URL ) ) {
@@ -74,10 +74,19 @@ class RestClient {
 	}
 
 	/**
+	 * Get content type
+	 *
+	 * @return string
+	 */
+	public function get_content_type(): string {
+		return $this->headers['Content-Type'] ?? '';
+	}
+
+	/**
 	 * Add header
 	 *
-	 * @param string|array $key Header key. Or array of headers with key => value format.
-	 * @param mixed        $value The value.
+	 * @param  string|array $key  Header key. Or array of headers with key => value format.
+	 * @param  mixed        $value  The value.
 	 *
 	 * @return self
 	 */
@@ -99,8 +108,8 @@ class RestClient {
 	/**
 	 * Add authorization header
 	 *
-	 * @param string $credentials Authorization credentials.
-	 * @param string $type Authorization type.
+	 * @param  string $credentials  Authorization credentials.
+	 * @param  string $type  Authorization type.
 	 *
 	 * @return static
 	 */
@@ -111,8 +120,8 @@ class RestClient {
 	/**
 	 * Set request argument.
 	 *
-	 * @param string $name Argument name.
-	 * @param null   $value Argument value.
+	 * @param  string $name  Argument name.
+	 * @param  null   $value  Argument value.
 	 *
 	 * @return static
 	 */
@@ -125,7 +134,7 @@ class RestClient {
 	/**
 	 * Get api endpoint
 	 *
-	 * @param string $endpoint Rest URL Endpoint.
+	 * @param  string $endpoint  Rest URL Endpoint.
 	 *
 	 * @return string
 	 */
@@ -145,8 +154,8 @@ class RestClient {
 	/**
 	 * Set global parameter
 	 *
-	 * @param string $key data key.
-	 * @param mixed  $value The value to be set.
+	 * @param  string $key  data key.
+	 * @param  mixed  $value  The value to be set.
 	 *
 	 * @return static
 	 */
@@ -168,8 +177,8 @@ class RestClient {
 	/**
 	 * Performs an HTTP GET request and returns its response.
 	 *
-	 * @param string $endpoint The rest endpoint.
-	 * @param array  $parameters Additional parameters.
+	 * @param  string $endpoint  The rest endpoint.
+	 * @param  array  $parameters  Additional parameters.
 	 *
 	 * @return array|WP_Error The response array or a WP_Error on failure.
 	 */
@@ -180,8 +189,8 @@ class RestClient {
 	/**
 	 * Performs an HTTP POST request and returns its response.
 	 *
-	 * @param string $endpoint The rest endpoint.
-	 * @param mixed  $data The rest body content.
+	 * @param  string $endpoint  The rest endpoint.
+	 * @param  mixed  $data  The rest body content.
 	 *
 	 * @return array|WP_Error The response array or a WP_Error on failure.
 	 */
@@ -192,8 +201,8 @@ class RestClient {
 	/**
 	 * Performs an HTTP PUT request and returns its response.
 	 *
-	 * @param string $endpoint The rest endpoint.
-	 * @param mixed  $data The rest body content.
+	 * @param  string $endpoint  The rest endpoint.
+	 * @param  mixed  $data  The rest body content.
 	 *
 	 * @return array|WP_Error The response array or a WP_Error on failure.
 	 */
@@ -204,8 +213,8 @@ class RestClient {
 	/**
 	 * Performs an HTTP DELETE request and returns its response.
 	 *
-	 * @param string $endpoint The rest endpoint.
-	 * @param mixed  $parameters Additional parameters.
+	 * @param  string $endpoint  The rest endpoint.
+	 * @param  mixed  $parameters  Additional parameters.
 	 *
 	 * @return array|WP_Error The response array or a WP_Error on failure.
 	 */
@@ -216,37 +225,19 @@ class RestClient {
 	/**
 	 * Performs an HTTP request and returns its response.
 	 *
-	 * @param string            $method Request method. Support GET, POST, PUT, DELETE.
-	 * @param string            $endpoint The rest endpoint.
-	 * @param null|string|array $request_body Request body or additional parameters for GET method.
+	 * @param  string            $method  Request method. Support GET, POST, PUT, DELETE.
+	 * @param  string            $endpoint  The rest endpoint.
+	 * @param  null|string|array $request_body  Request body or additional parameters for GET method.
 	 *
 	 * @return array|WP_Error The response array or a WP_Error on failure.
 	 */
 	public function request( string $method = 'GET', string $endpoint = '', $request_body = null ) {
-		$request_url      = $this->get_api_endpoint( $endpoint );
-		$base_args        = array(
-			'method'  => $method,
-			'headers' => $this->headers,
-		);
-		$api_request_args = array_merge( $base_args, $this->request_args );
-		if ( ! empty( $request_body ) ) {
-			if ( in_array( $method, [ 'POST', 'PUT' ], true ) ) {
-				$api_request_args['body'] = $request_body;
-			} else {
-				$request_url = add_query_arg( $request_body, $request_url );
-			}
-		}
+		list( $url, $args ) = $this->get_url_and_arguments( $method, $endpoint, $request_body );
 
-		// Add global parameters if any.
-		if ( count( $this->get_global_parameters() ) ) {
-			$request_url = add_query_arg( $this->get_global_parameters(), $request_url );
-		}
-
-		$response = wp_remote_request( $request_url, $api_request_args );
-
+		$response         = wp_remote_request( $url, $args );
 		$this->debug_info = [
-			'request_url'  => $request_url,
-			'request_args' => $api_request_args,
+			'request_url'  => $url,
+			'request_args' => $args,
 		];
 
 		if ( is_wp_error( $response ) ) {
@@ -275,5 +266,41 @@ class RestClient {
 		}
 
 		return $response_body;
+	}
+
+	/**
+	 * Get HTTP request url and arguments
+	 *
+	 * @param  string            $method  Request method. Support GET, POST, PUT, DELETE.
+	 * @param  string            $endpoint  The rest endpoint.
+	 * @param  null|string|array $request_body  Request body or additional parameters for GET method.
+	 *
+	 * @return array
+	 */
+	public function get_url_and_arguments(
+		string $method = 'GET',
+		string $endpoint = '',
+		$request_body = null
+	): array {
+		$url       = $this->get_api_endpoint( $endpoint );
+		$base_args = [
+			'method'  => $method,
+			'headers' => $this->headers,
+		];
+		$args      = array_merge( $base_args, $this->request_args );
+		if ( ! empty( $request_body ) ) {
+			if ( in_array( $method, [ 'HEAD', 'GET', 'DELETE' ], true ) ) {
+				$url = add_query_arg( $request_body, $url );
+			} else {
+				$args['body'] = $request_body;
+			}
+		}
+
+		// Add global parameters if any.
+		if ( count( $this->get_global_parameters() ) ) {
+			$url = add_query_arg( $this->get_global_parameters(), $url );
+		}
+
+		return [ $url, $args ];
 	}
 }
