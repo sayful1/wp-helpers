@@ -1,3 +1,7 @@
+#### 1.9.10
+
+* Update `Stackonet\WP\Framework\Supports\RestClient` class.
+
 #### 1.9.9
 
 * Add option to map read record(s) from database into `Stackonet\WP\Framework\Abstracts\Data` class

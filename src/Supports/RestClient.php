@@ -222,6 +222,7 @@ class RestClient {
 		return $this->request( 'DELETE', $endpoint, $parameters );
 	}
 
+
 	/**
 	 * Performs an HTTP request and returns its response.
 	 *
@@ -233,39 +234,15 @@ class RestClient {
 	 */
 	public function request( string $method = 'GET', string $endpoint = '', $request_body = null ) {
 		list( $url, $args ) = $this->get_url_and_arguments( $method, $endpoint, $request_body );
+		$remote_response    = wp_remote_request( $url, $args );
 
-		$response         = wp_remote_request( $url, $args );
 		$this->debug_info = [
-			'request_url'  => $url,
-			'request_args' => $args,
+			'request_url'     => $url,
+			'request_args'    => $args,
+			'remote_response' => $remote_response,
 		];
 
-		if ( is_wp_error( $response ) ) {
-			$response->add_data( $this->debug_info, 'debug_info' );
-
-			return $response;
-		}
-
-		$response_code = (int) wp_remote_retrieve_response_code( $response );
-		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
-
-		if ( ! is_array( $response_body ) ) {
-			$response = new WP_Error( 'unexpected_response_type', 'Rest Client Error: unexpected response type' );
-			$response->add_data( $this->debug_info, 'debug_info' );
-
-			return $response;
-		}
-
-		if ( ! ( $response_code >= 200 && $response_code < 300 ) ) {
-			$response_message = wp_remote_retrieve_response_message( $response );
-
-			$response = new WP_Error( 'rest_error', $response_message, $response_body );
-			$response->add_data( $this->debug_info, 'debug_info' );
-
-			return $response;
-		}
-
-		return $response_body;
+		return $this->filter_remote_response( $url, $args, $remote_response );
 	}
 
 	/**
@@ -302,5 +279,50 @@ class RestClient {
 		}
 
 		return [ $url, $args ];
+	}
+
+	/**
+	 * Filter remote response
+	 *
+	 * @param  string         $url  The request URL.
+	 * @param  array          $args  The request arguments.
+	 * @param  array|WP_Error $response  The remote response or WP_Error object.
+	 *
+	 * @return array|WP_Error
+	 */
+	public function filter_remote_response( string $url, array $args, $response ) {
+		if ( is_wp_error( $response ) ) {
+			$response->add_data( $url, 'debug_request_url' );
+			$response->add_data( $args, 'debug_request_args' );
+
+			return $response;
+		}
+
+		$response_code = (int) wp_remote_retrieve_response_code( $response );
+		$content_type  = wp_remote_retrieve_header( $response, 'Content-Type' );
+		if ( false !== strpos( $content_type, 'application/json' ) ) {
+			$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+		} elseif ( false !== strpos( $content_type, 'text/html' ) ) {
+			$response_body = (array) wp_remote_retrieve_body( $response );
+		} else {
+			$response_body = 'Unsupported content type: ' . $content_type;
+		}
+
+		if ( ! ( $response_code >= 200 && $response_code < 300 ) ) {
+			$response_message = wp_remote_retrieve_response_message( $response );
+			$wp_error         = new WP_Error( 'rest_error', $response_message, $response_body );
+			$wp_error->add_data( $this->get_debug_info(), 'debug_info' );
+
+			return $wp_error;
+		}
+
+		if ( ! is_array( $response_body ) ) {
+			$wp_error = new WP_Error( 'unexpected_response_type', 'Rest Client Error: unexpected response type' );
+			$wp_error->add_data( $this->get_debug_info(), 'debug_info' );
+
+			return $wp_error;
+		}
+
+		return $response_body;
 	}
 }
