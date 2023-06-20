@@ -4,6 +4,9 @@ namespace Stackonet\WP\Framework\Abstracts;
 
 defined( 'ABSPATH' ) || exit;
 
+/**
+ * BackgroundProcessWithUiHelper class
+ */
 abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	/**
 	 * Show admin notice or not
@@ -17,14 +20,21 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	 *
 	 * @var string
 	 */
-	protected $admin_notice_heading = "A background task is running to process {{total_items}} items.";
+	protected $admin_notice_heading = 'A background task is running to process {{total_items}} items.';
+
+	/**
+	 * Capability required to perform view/clear operation
+	 *
+	 * @var string
+	 */
+	protected $capability = 'manage_options';
 
 	/**
 	 * Class constructor
 	 */
 	public function __construct() {
 		parent::__construct();
-		add_action( 'wp_ajax_clear_' . $this->action, [ $this, 'clear_sync_openai_api' ] );
+		add_action( 'wp_ajax_clear_' . $this->action, [ $this, 'clear_pending_tasks' ] );
 		add_action( 'wp_ajax_view_' . $this->action, [ $this, 'view_pending_tasks' ] );
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 		add_action( 'shutdown', [ $this, 'save_and_dispatch' ] );
@@ -48,6 +58,9 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 		if ( false === $this->show_admin_notice ) {
 			return;
 		}
+		if ( ! current_user_can( $this->capability ) ) {
+			return;
+		}
 		$total_items = count( $this->get_pending_items() );
 		if ( $total_items < 1 ) {
 			return;
@@ -57,7 +70,7 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 
 		?>
 		<div class="notice notice-info is-dismissible">
-			<p><?php echo esc_html( $message ) ?></p>
+			<p><?php echo esc_html( $message ); ?></p>
 			<p>
 				<a href="<?php echo esc_url( $this->get_task_view_url() ); ?>" class="button button-primary"
 				   target="_blank">View</a>
@@ -75,10 +88,13 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	 */
 	public function get_task_clear_url(): string {
 		return wp_nonce_url(
-			add_query_arg( [
-				'action'   => 'clear_' . $this->action,
-				'_referer' => urlencode( wp_unslash( $_SERVER['REQUEST_URI'] ) ),
-			], admin_url( 'admin-ajax.php' ) ),
+			add_query_arg(
+				[
+					'action'   => 'clear_' . $this->action,
+					'_referer' => rawurlencode( wp_unslash( $_SERVER['REQUEST_URI'] ) ),
+				],
+				admin_url( 'admin-ajax.php' )
+			),
 			'clear_background_task_items_list',
 			'_token'
 		);
@@ -140,7 +156,7 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	 * @return void
 	 */
 	public function view_pending_tasks() {
-		if ( isset( $_GET['_token'] ) && wp_verify_nonce( $_GET['_token'], 'view_background_task_items_list' ) ) {
+		if ( $this->can_proceed() ) {
 			$tasks = $this->get_pending_items();
 			header( 'Content-Type: application/json' );
 			echo wp_json_encode( $tasks, \JSON_PRETTY_PRINT );
@@ -153,8 +169,8 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	 *
 	 * @return void
 	 */
-	public function clear_sync_openai_api() {
-		if ( isset( $_GET['_token'] ) && wp_verify_nonce( $_GET['_token'], 'clear_background_task_items_list' ) ) {
+	public function clear_pending_tasks() {
+		if ( $this->can_proceed() ) {
 			global $wpdb;
 			$table  = $wpdb->options;
 			$column = 'option_name';
@@ -174,7 +190,27 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 			$redirect_to = $_referer ? site_url( $_referer ) : admin_url();
 
 			wp_safe_redirect( $redirect_to );
+			exit();
 		}
 		wp_die();
+	}
+
+	/**
+	 * If current user has permission to view/delete tasks
+	 *
+	 * @return bool
+	 */
+	protected function can_proceed(): bool {
+		if ( ! current_user_can( $this->capability ) ) {
+			return false;
+		}
+		if ( ! isset( $_GET['_token'] ) ) {
+			return false;
+		}
+		if ( ! wp_verify_nonce( $_GET['_token'], 'clear_background_task_items_list' ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }
