@@ -1,3 +1,11 @@
+#### 1.9.13
+
+* Update `Stackonet\WP\Framework\Supports\RestClient` class.
+
+#### 1.9.12
+
+* Update `Stackonet\WP\Framework\Abstracts\BackgroundProcessWithUiHelper` class to show ongoing task info.
+
 #### 1.9.11
 
 * Add `Stackonet\WP\Framework\Abstracts\BackgroundProcessWithUiHelper` class to show ongoing task info.
