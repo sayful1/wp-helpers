@@ -290,13 +290,13 @@ class RestClient {
 	/**
 	 * Get endpoint full url
 	 *
-	 * @param string     $method Request method. Support GET, POST, PUT, DELETE.
-	 * @param string     $endpoint Endpoint.
-	 * @param array|null $args additional arguments.
+	 * @param string $method Request method. Support GET, POST, PUT, DELETE.
+	 * @param string $endpoint Endpoint.
+	 * @param mixed  $args additional arguments.
 	 *
 	 * @return string
 	 */
-	public function get_endpoint_url( string $method, string $endpoint, ?array $args = null ): string {
+	public function get_endpoint_url( string $method, string $endpoint, $args = null ): string {
 		$url = $this->get_api_endpoint( $endpoint );
 		if ( is_array( $args ) && in_array( $method, [ 'HEAD', 'GET', 'DELETE' ], true ) ) {
 			$url = add_query_arg( $args, $url );

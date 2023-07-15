@@ -69,15 +69,15 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 		$message = str_replace( '{{total_items}}', $total_items, $this->admin_notice_heading );
 
 		?>
-		<div class="notice notice-info is-dismissible">
-			<p><?php echo esc_html( $message ); ?></p>
-			<p>
-				<a href="<?php echo esc_url( $this->get_task_view_url() ); ?>" class="button button-primary"
-				   target="_blank">View</a>
-				<a href="<?php echo esc_url( $this->get_task_clear_url() ); ?>" class="button is-error">Clear
-					Task</a>
-			</p>
-		</div>
+        <div class="notice notice-info is-dismissible">
+            <p><?php echo esc_html( $message ); ?></p>
+            <p>
+                <a href="<?php echo esc_url( $this->get_task_view_url() ); ?>" class="button button-primary"
+                   target="_blank">View</a>
+                <a href="<?php echo esc_url( $this->get_task_clear_url() ); ?>" class="button is-error">Clear
+                    Task</a>
+            </p>
+        </div>
 		<?php
 	}
 
@@ -207,10 +207,10 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 		if ( ! isset( $_GET['_token'] ) ) {
 			return false;
 		}
-		if ( ! wp_verify_nonce( $_GET['_token'], 'clear_background_task_items_list' ) ) {
-			return false;
-		}
 
-		return true;
+		return (
+			false !== wp_verify_nonce( $_GET['_token'], 'view_background_task_items_list' ) ||
+			false !== wp_verify_nonce( $_GET['_token'], 'clear_background_task_items_list' )
+		);
 	}
 }
