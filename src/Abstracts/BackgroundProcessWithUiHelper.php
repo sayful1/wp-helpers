@@ -36,6 +36,7 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 		parent::__construct();
 		add_action( 'wp_ajax_clear_' . $this->action, [ $this, 'clear_pending_tasks' ] );
 		add_action( 'wp_ajax_view_' . $this->action, [ $this, 'view_pending_tasks' ] );
+		add_action( 'wp_ajax_run_now_' . $this->action, [ $this, 'run_single_task' ] );
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 		add_action( 'shutdown', [ $this, 'save_and_dispatch' ] );
 	}
@@ -69,15 +70,15 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 		$message = str_replace( '{{total_items}}', $total_items, $this->admin_notice_heading );
 
 		?>
-        <div class="notice notice-info is-dismissible">
-            <p><?php echo esc_html( $message ); ?></p>
-            <p>
-                <a href="<?php echo esc_url( $this->get_task_view_url() ); ?>" class="button button-primary"
-                   target="_blank">View</a>
-                <a href="<?php echo esc_url( $this->get_task_clear_url() ); ?>" class="button is-error">Clear
-                    Task</a>
-            </p>
-        </div>
+		<div class="notice notice-info is-dismissible">
+			<p><?php echo esc_html( $message ); ?></p>
+			<p>
+				<a href="<?php echo esc_url( $this->get_task_view_url() ); ?>" class="button button-primary"
+				   target="_blank">View</a>
+				<a href="<?php echo esc_url( $this->get_task_clear_url() ); ?>" class="button is-error">Clear
+					Task</a>
+			</p>
+		</div>
 		<?php
 	}
 
@@ -95,7 +96,7 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 				],
 				admin_url( 'admin-ajax.php' )
 			),
-			'clear_background_task_items_list',
+			'background_task_items_list',
 			'_token'
 		);
 	}
@@ -108,7 +109,7 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	public function get_task_view_url(): string {
 		return wp_nonce_url(
 			add_query_arg( [ 'action' => 'view_' . $this->action ], admin_url( 'admin-ajax.php' ) ),
-			'view_background_task_items_list',
+			'background_task_items_list',
 			'_token'
 		);
 	}
@@ -119,6 +120,24 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	 * @return array
 	 */
 	public function get_pending_items(): array {
+		$batches = $this->get_batches();
+
+		$tasks = [];
+		foreach ( $batches as $result ) {
+			foreach ( $result as $value ) {
+				$tasks[] = $value;
+			}
+		}
+
+		return $tasks;
+	}
+
+	/**
+	 * Get pending batches
+	 *
+	 * @return array
+	 */
+	public function get_batches() {
 		global $wpdb;
 		$table        = $wpdb->options;
 		$column       = 'option_name';
@@ -141,13 +160,28 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 
 		$tasks = [];
 		foreach ( $results as $result ) {
-			$values = maybe_unserialize( $result[ $value_column ] );
-			foreach ( $values as $value ) {
-				$tasks[] = $value;
-			}
+			$tasks[ $result[ $column ] ] = maybe_unserialize( $result[ $value_column ] );
 		}
 
 		return $tasks;
+	}
+
+	/**
+	 * Remove a item from batches
+	 *
+	 * @param string|int $batch_key Batch key name.
+	 * @param string|int $item_index Item index.
+	 *
+	 * @return void
+	 */
+	public function remove_from_batches( $batch_key, $item_index ) {
+		$batches     = $this->get_batches();
+		$batch_items = $batches[ $batch_key ] ?? [];
+		if ( isset( $batch_items[ $item_index ] ) ) {
+			unset( $batch_items[ $item_index ] );
+
+			$this->update( $batch_key, $batch_items );
+		}
 	}
 
 	/**
@@ -157,9 +191,7 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	 */
 	public function view_pending_tasks() {
 		if ( $this->can_proceed() ) {
-			$tasks = $this->get_pending_items();
-			header( 'Content-Type: application/json' );
-			echo wp_json_encode( $tasks, \JSON_PRETTY_PRINT );
+			$this->render_view();
 		}
 		wp_die();
 	}
@@ -208,9 +240,125 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 			return false;
 		}
 
-		return (
-			false !== wp_verify_nonce( $_GET['_token'], 'view_background_task_items_list' ) ||
-			false !== wp_verify_nonce( $_GET['_token'], 'clear_background_task_items_list' )
+		return false !== wp_verify_nonce( $_GET['_token'], 'background_task_items_list' );
+	}
+
+	/**
+	 * Get run now action url.
+	 *
+	 * @param mixed      $payload payload data.
+	 * @param string|int $batch_key Batch key.
+	 * @param string|int $index Item index.
+	 *
+	 * @return string
+	 */
+	public function get_run_now_action_url( $payload, $batch_key, $index ): string {
+		return wp_nonce_url(
+			add_query_arg(
+				[
+					'action'     => 'run_now_' . $this->action,
+					'batch'      => $batch_key,
+					'item_index' => $index,
+					'payload'    => rawurlencode( wp_json_encode( $payload ) ),
+					'_referer'   => rawurlencode( wp_unslash( $_SERVER['REQUEST_URI'] ) ),
+				],
+				admin_url( 'admin-ajax.php' )
+			),
+			'background_task_items_list',
+			'_token'
 		);
+	}
+
+	/**
+	 * Run a single task
+	 *
+	 * @return void
+	 */
+	public function run_single_task() {
+		if ( $this->can_proceed() ) {
+			$batch_key  = isset( $_GET['batch'] ) ? sanitize_text_field( $_GET['batch'] ) : '';
+			$item_index = isset( $_GET['item_index'] ) ? intval( $_GET['item_index'] ) : '';
+			$payload    = isset( $_GET['payload'] ) ? rawurldecode( $_GET['payload'] ) : '';
+			$payload    = json_decode( stripslashes( $payload ), true );
+
+			if ( $payload ) {
+				$task = $this->task( $payload );
+				if ( false === $task ) {
+					$this->remove_from_batches( $batch_key, $item_index );
+				} else {
+					var_dump( $task );
+					die;
+				}
+			}
+
+			wp_safe_redirect( $this->get_task_view_url() );
+			exit();
+		}
+		die();
+	}
+
+	/**
+	 * Render view
+	 *
+	 * @return void
+	 */
+	public function render_view() {
+		$batches = $this->get_batches();
+		$html    = '<div class="container">';
+		foreach ( $batches as $batch_key => $tasks ) {
+			$html .= '<h2>' . $batch_key . '</h2>';
+			foreach ( $tasks as $index => $task ) {
+				$action_url = $this->get_run_now_action_url( $task, $batch_key, $index );
+
+				$html .= '<div class="card">';
+
+				$html .= '<pre class="m-0"><code>';
+				$html .= wp_json_encode( $task, JSON_PRETTY_PRINT );
+				$html .= '</code></pre>' . PHP_EOL;
+
+				$html .= '<div>';
+				$html .= '<a class="button" href="' . $action_url . '">Run Now</a>';
+				$html .= '</div>' . PHP_EOL;
+
+				$html .= '</div>' . PHP_EOL;
+			}
+		}
+		$html .= '</div>';
+
+		echo $html . '<style>' . $this->style() . '</style>';
+	}
+
+	/**
+	 * General style for pending task view
+	 *
+	 * @return string
+	 */
+	public function style(): string {
+		$style = '<style type="text/css">';
+
+		$style .= '.m-0 {margin:0}';
+		$style .= '.card {
+		    display:flex;
+		    justify-content:space-between;
+		    align-items:center;
+		    margin-bottom: 8px;
+		    border: 1px solid rgba(0,0,0,.12);
+		    padding:8px;
+		}';
+		$style .= '.button {
+		    display:inline-flex;
+		    border: 1px solid rgba(0,0,0,.12);
+		    padding:8px;
+		    border-radius:4px;
+		    text-decoration:none;
+		}';
+		$style .= '.container {
+			margin:16px auto;
+			max-width:960;
+			display:block;
+		}';
+		$style .= '</style>';
+
+		return $style;
 	}
 }
