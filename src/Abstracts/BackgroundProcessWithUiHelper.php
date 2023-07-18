@@ -34,11 +34,9 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	 */
 	public function __construct() {
 		parent::__construct();
-		add_action( 'wp_ajax_clear_' . $this->action, [ $this, 'clear_pending_tasks' ] );
-		add_action( 'wp_ajax_view_' . $this->action, [ $this, 'view_pending_tasks' ] );
-		add_action( 'wp_ajax_run_now_' . $this->action, [ $this, 'run_single_task' ] );
-		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 		add_action( 'shutdown', [ $this, 'save_and_dispatch' ] );
+		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
+		add_action( 'wp_ajax_run_manual_task_' . $this->action, [ $this, 'run_manual_task' ] );
 	}
 
 	/**
@@ -73,13 +71,78 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 		<div class="notice notice-info is-dismissible">
 			<p><?php echo esc_html( $message ); ?></p>
 			<p>
-				<a href="<?php echo esc_url( $this->get_task_view_url() ); ?>" class="button button-primary"
-				   target="_blank">View</a>
-				<a href="<?php echo esc_url( $this->get_task_clear_url() ); ?>" class="button is-error">Clear
-					Task</a>
+				<a href="<?php echo esc_url( $this->get_task_view_url() ); ?>" class="button button-primary">View</a>
+				<a href="<?php echo esc_url( $this->get_task_clear_url() ); ?>" class="button is-error">Clear Task</a>
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Run a manual tasks
+	 *
+	 * @return void
+	 */
+	public function run_manual_task() {
+		if (
+			current_user_can( $this->capability ) &&
+			isset( $_GET['_token'] ) &&
+			wp_verify_nonce( $_GET['_token'], 'background_process_manual_action' )
+		) {
+			$start_time = microtime( true );
+			$task       = isset( $_GET['task'] ) ? sanitize_text_field( $_GET['task'] ) : '';
+
+			$batch_key  = isset( $_GET['batch'] ) ? sanitize_text_field( $_GET['batch'] ) : '';
+			$item_index = isset( $_GET['item_index'] ) ? intval( $_GET['item_index'] ) : '';
+
+			if ( 'view_process' === $task ) {
+				$batches = $this->get_batches();
+				if ( count( $batches ) ) {
+					$this->view_pending_tasks( $batches );
+				} else {
+					$task = 'redirect_back';
+				}
+			}
+			if ( 'clear_process' === $task ) {
+				$this->clear_pending_tasks();
+			}
+			if ( 'clear_process_batch' === $task ) {
+				$batches = $this->get_batches();
+				if ( isset( $batches[ $batch_key ] ) ) {
+					$this->delete( $batch_key );
+				}
+			}
+			if ( 'clear_process_item' === $task ) {
+				$this->remove_from_batches( $batch_key, $item_index );
+			}
+			if ( 'run_process_item' === $task ) {
+				$batches = $this->get_batches();
+				$payload = $batches[ $batch_key ] ?? [];
+				if ( ! empty( $payload[ $item_index ] ) ) {
+					$task = $this->task( $payload[ $item_index ] );
+					if ( false === $task ) {
+						$this->remove_from_batches( $batch_key, $item_index );
+					} else {
+						var_dump(
+							[
+								'payload'       => $payload[ $item_index ],
+								'task_response' => $task,
+								'process_time'  => microtime( true ) - $start_time,
+							]
+						);
+						die;
+					}
+				}
+			}
+
+			if ( 'view_process' !== $task ) {
+				$_referer    = isset( $_GET['_referer'] ) ? urldecode( $_GET['_referer'] ) : '';
+				$redirect_to = $_referer ? site_url( $_referer ) : admin_url();
+				wp_safe_redirect( $redirect_to );
+				exit();
+			}
+		}
+		die;
 	}
 
 	/**
@@ -88,17 +151,7 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	 * @return string
 	 */
 	public function get_task_clear_url(): string {
-		return wp_nonce_url(
-			add_query_arg(
-				[
-					'action'   => 'clear_' . $this->action,
-					'_referer' => rawurlencode( wp_unslash( $_SERVER['REQUEST_URI'] ) ),
-				],
-				admin_url( 'admin-ajax.php' )
-			),
-			'background_task_items_list',
-			'_token'
-		);
+		return $this->build_ajax_url( 'clear_process' );
 	}
 
 	/**
@@ -107,11 +160,54 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	 * @return string
 	 */
 	public function get_task_view_url(): string {
-		return wp_nonce_url(
-			add_query_arg( [ 'action' => 'view_' . $this->action ], admin_url( 'admin-ajax.php' ) ),
-			'background_task_items_list',
-			'_token'
+		return $this->build_ajax_url( 'view_process' );
+	}
+
+	/**
+	 * Get run now action url.
+	 *
+	 * @param string|int $batch_key Batch key.
+	 * @param string|int $index Item index.
+	 *
+	 * @return string
+	 */
+	public function get_run_process_item_url( $batch_key, $index ): string {
+		return $this->build_ajax_url(
+			'run_process_item',
+			[
+				'batch'      => $batch_key,
+				'item_index' => $index,
+			]
 		);
+	}
+
+	/**
+	 * Get run now action url.
+	 *
+	 * @param string|int $batch_key Batch key.
+	 * @param string|int $index Item index.
+	 *
+	 * @return string
+	 */
+	public function get_clear_process_item_url( $batch_key, $index ): string {
+		return $this->build_ajax_url(
+			'clear_process_item',
+			[
+				'batch'      => $batch_key,
+				'item_index' => $index,
+			]
+		);
+	}
+
+	/**
+	 * Get run now action url.
+	 *
+	 * @param string|int $batch_key Batch key.
+	 *
+	 * @return string
+	 */
+	public function get_clear_process_batch_url( $batch_key ): string {
+		return $this->build_ajax_url( 'clear_process_batch', [ 'batch' => $batch_key ] );
 	}
 
 	/**
@@ -137,7 +233,7 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	 *
 	 * @return array
 	 */
-	public function get_batches() {
+	public function get_batches(): array {
 		global $wpdb;
 		$table        = $wpdb->options;
 		$column       = 'option_name';
@@ -187,12 +283,64 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	/**
 	 * View pending task items list
 	 *
+	 * @param array $batches List of batches.
+	 *
 	 * @return void
 	 */
-	public function view_pending_tasks() {
-		if ( $this->can_proceed() ) {
-			$this->render_view();
+	public function view_pending_tasks( array $batches ) {
+		$_referer    = isset( $_GET['_referer'] ) ? urldecode( $_GET['_referer'] ) : '';
+		$redirect_to = $_referer ? site_url( $_referer ) : admin_url();
+
+		$html = '<div class="container">';
+
+		$html .= '<div class="mb-4">';
+		$html .= sprintf(
+			'<a class="button" href="%s" style="font-size: 18px">Back</a>',
+			$redirect_to
+		);
+		$html .= '</div>' . PHP_EOL;
+
+		foreach ( $batches as $batch_key => $tasks ) {
+			$clear_process_batch_url = $this->get_clear_process_batch_url( $batch_key );
+
+			$html .= '<h2>' . $batch_key . '</h2>';
+			$html .= '<div class="mb-4 flex space-between">';
+			$html .= '<div>' . sprintf( 'Total items: %s', count( $tasks ) ) . '</div>';
+			$html .= sprintf(
+				'<a class="button bg-red-600 text-white" href="%s">Delete %s items</a>',
+				$clear_process_batch_url,
+				count( $tasks )
+			);
+			$html .= '</div>' . PHP_EOL;
+			foreach ( $tasks as $index => $task ) {
+				$action_url     = $this->get_run_process_item_url( $batch_key, $index );
+				$remove_now_url = $this->get_clear_process_item_url( $batch_key, $index );
+
+				$html .= '<div class="card">' . PHP_EOL;
+
+				$html .= '<div class="card__content">' . PHP_EOL;
+
+				if ( method_exists( $this, 'process_item_card_content_html' ) ) {
+					$html .= $this->process_item_card_content_html( $task );
+				} else {
+					$html .= '<pre class="m-0"><code>';
+					$html .= wp_json_encode( $task, JSON_PRETTY_PRINT );
+					$html .= '</code></pre>';
+				}
+
+				$html .= '</div>' . PHP_EOL;
+
+				$html .= '<div class="card__actions flex flex-col space-y-2">' . PHP_EOL;
+				$html .= '<a class="button" href="' . $action_url . '">Run Now</a>' . PHP_EOL;
+				$html .= '<a class="button bg-red-600 text-white" href="' . $remove_now_url . '">Remove</a>' . PHP_EOL;
+				$html .= '</div>' . PHP_EOL;
+
+				$html .= '</div>' . PHP_EOL . PHP_EOL;
+			}
 		}
+		$html .= '</div>';
+
+		echo $html . '<style>' . $this->style() . '</style>';
 		wp_die();
 	}
 
@@ -201,131 +349,44 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	 *
 	 * @return void
 	 */
-	public function clear_pending_tasks() {
-		if ( $this->can_proceed() ) {
-			global $wpdb;
-			$table  = $wpdb->options;
-			$column = 'option_name';
-			if ( is_multisite() ) {
-				$table  = $wpdb->sitemeta;
-				$column = 'meta_key';
-			}
-			$key = $wpdb->esc_like( $this->identifier . '_batch_' ) . '%';
-			$wpdb->query(
-				$wpdb->prepare(
-					"DELETE FROM {$table} WHERE {$column} LIKE %s",
-					$key
-				)
-			);
-
-			$_referer    = isset( $_GET['_referer'] ) ? urldecode( $_GET['_referer'] ) : '';
-			$redirect_to = $_referer ? site_url( $_referer ) : admin_url();
-
-			wp_safe_redirect( $redirect_to );
-			exit();
+	protected function clear_pending_tasks() {
+		global $wpdb;
+		$table  = $wpdb->options;
+		$column = 'option_name';
+		if ( is_multisite() ) {
+			$table  = $wpdb->sitemeta;
+			$column = 'meta_key';
 		}
-		wp_die();
+		$key = $wpdb->esc_like( $this->identifier . '_batch_' ) . '%';
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$table} WHERE {$column} LIKE %s",
+				$key
+			)
+		);
+		$this->clear_scheduled_event();
 	}
 
 	/**
-	 * If current user has permission to view/delete tasks
+	 * Build ajax URL
 	 *
-	 * @return bool
-	 */
-	protected function can_proceed(): bool {
-		if ( ! current_user_can( $this->capability ) ) {
-			return false;
-		}
-		if ( ! isset( $_GET['_token'] ) ) {
-			return false;
-		}
-
-		return false !== wp_verify_nonce( $_GET['_token'], 'background_task_items_list' );
-	}
-
-	/**
-	 * Get run now action url.
-	 *
-	 * @param mixed      $payload payload data.
-	 * @param string|int $batch_key Batch key.
-	 * @param string|int $index Item index.
+	 * @param string $task Ajax task.
+	 * @param array  $args URI parameters.
 	 *
 	 * @return string
 	 */
-	public function get_run_now_action_url( $payload, $batch_key, $index ): string {
+	protected function build_ajax_url( string $task, array $args = [] ): string {
+		$parameters = [
+			'action'   => 'run_manual_task_' . $this->action,
+			'task'     => $task,
+			'_referer' => rawurlencode( wp_unslash( $_SERVER['REQUEST_URI'] ) ),
+		];
+
 		return wp_nonce_url(
-			add_query_arg(
-				[
-					'action'     => 'run_now_' . $this->action,
-					'batch'      => $batch_key,
-					'item_index' => $index,
-					'payload'    => rawurlencode( wp_json_encode( $payload ) ),
-					'_referer'   => rawurlencode( wp_unslash( $_SERVER['REQUEST_URI'] ) ),
-				],
-				admin_url( 'admin-ajax.php' )
-			),
-			'background_task_items_list',
+			add_query_arg( array_merge( $parameters, $args ), admin_url( 'admin-ajax.php' ) ),
+			'background_process_manual_action',
 			'_token'
 		);
-	}
-
-	/**
-	 * Run a single task
-	 *
-	 * @return void
-	 */
-	public function run_single_task() {
-		if ( $this->can_proceed() ) {
-			$batch_key  = isset( $_GET['batch'] ) ? sanitize_text_field( $_GET['batch'] ) : '';
-			$item_index = isset( $_GET['item_index'] ) ? intval( $_GET['item_index'] ) : '';
-			$payload    = isset( $_GET['payload'] ) ? rawurldecode( $_GET['payload'] ) : '';
-			$payload    = json_decode( stripslashes( $payload ), true );
-
-			if ( $payload ) {
-				$task = $this->task( $payload );
-				if ( false === $task ) {
-					$this->remove_from_batches( $batch_key, $item_index );
-				} else {
-					var_dump( $task );
-					die;
-				}
-			}
-
-			wp_safe_redirect( $this->get_task_view_url() );
-			exit();
-		}
-		die();
-	}
-
-	/**
-	 * Render view
-	 *
-	 * @return void
-	 */
-	public function render_view() {
-		$batches = $this->get_batches();
-		$html    = '<div class="container">';
-		foreach ( $batches as $batch_key => $tasks ) {
-			$html .= '<h2>' . $batch_key . '</h2>';
-			foreach ( $tasks as $index => $task ) {
-				$action_url = $this->get_run_now_action_url( $task, $batch_key, $index );
-
-				$html .= '<div class="card">';
-
-				$html .= '<pre class="m-0"><code>';
-				$html .= wp_json_encode( $task, JSON_PRETTY_PRINT );
-				$html .= '</code></pre>' . PHP_EOL;
-
-				$html .= '<div>';
-				$html .= '<a class="button" href="' . $action_url . '">Run Now</a>';
-				$html .= '</div>' . PHP_EOL;
-
-				$html .= '</div>' . PHP_EOL;
-			}
-		}
-		$html .= '</div>';
-
-		echo $html . '<style>' . $this->style() . '</style>';
 	}
 
 	/**
@@ -336,7 +397,15 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	public function style(): string {
 		$style = '<style type="text/css">';
 
-		$style .= '.m-0 {margin:0}';
+		$style .= '
+			.m-0 {margin:0}.mb-4{margin-bottom: 1rem}
+			.flex {display:flex;}
+			.flex-col{flex-direction:column;}
+			.space-between {justify-content:space-between;}
+			.space-y-2 > * + * {margin-top: 0.5rem}
+			.bg-red-600	{background-color: rgb(220 38 38)}
+			.text-white {color: #fff}
+		';
 		$style .= '.card {
 		    display:flex;
 		    justify-content:space-between;
@@ -351,6 +420,8 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 		    padding:8px;
 		    border-radius:4px;
 		    text-decoration:none;
+		    line-height: 1em;
+		    font-size: .75rem;
 		}';
 		$style .= '.container {
 			margin:16px auto;

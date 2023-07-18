@@ -41,6 +41,14 @@ abstract class BackgroundProcess extends AsyncRequest {
 	 * @access protected
 	 */
 	protected $start_time = 0;
+
+	/**
+	 * Default time limit in seconds
+	 *
+	 * @var int
+	 */
+	protected $default_time_limit = 20;
+
 	/**
 	 * Cron_hook_identifier
 	 *
@@ -112,7 +120,7 @@ abstract class BackgroundProcess extends AsyncRequest {
 	 * Update queue
 	 *
 	 * @param string $key Key.
-	 * @param array  $data Data.
+	 * @param array $data Data.
 	 *
 	 * @return $this
 	 */
@@ -360,7 +368,7 @@ abstract class BackgroundProcess extends AsyncRequest {
 	 * @return bool
 	 */
 	protected function time_exceeded() {
-		$finish = $this->start_time + apply_filters( $this->identifier . '_default_time_limit', 20 ); // 20 seconds
+		$finish = $this->start_time + apply_filters( $this->identifier . '_default_time_limit', $this->default_time_limit );
 		$return = false;
 		if ( time() >= $finish ) {
 			$return = true;

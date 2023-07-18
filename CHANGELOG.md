@@ -1,3 +1,7 @@
+#### 1.9.15
+
+* Update `Stackonet\WP\Framework\Abstracts\BackgroundProcessWithUiHelper`
+
 #### 1.9.14
 
 * Update `Stackonet\WP\Framework\Abstracts\BackgroundProcessWithUiHelper`
