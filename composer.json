@@ -1,7 +1,7 @@
 {
   "name": "stackonet/wp-helpers",
   "description": "A WordPress framework for easy development.",
-  "version": "1.9.15",
+  "version": "1.10.0",
   "type": "library",
   "keywords": [
     "wordpress"
@@ -52,6 +52,12 @@
   "autoload-dev": {
     "psr-4": {
       "StackonetWPFrameworkTest\\": "tests/unit/"
+    }
+  },
+  "config": {
+    "allow-plugins": {
+      "roots/wordpress-core-installer": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true
     }
   }
 }

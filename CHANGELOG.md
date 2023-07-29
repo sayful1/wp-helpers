@@ -1,3 +1,7 @@
+#### 1.10.0
+
+* Update background processing functionality.
+
 #### 1.9.15
 
 * Update `Stackonet\WP\Framework\Abstracts\BackgroundProcessWithUiHelper`
