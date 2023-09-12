@@ -1,3 +1,7 @@
+#### 1.11.0
+
+* Add search option for `DataStoreBase::find_multiple()` method.
+
 #### 1.10.0
 
 * Update background processing functionality.

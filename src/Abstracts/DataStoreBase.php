@@ -538,6 +538,7 @@ class DataStoreBase implements DataStoreInterface {
 	 * @type int $per_page Number of result to fetch per query.
 	 * @type array $orders_by Array of [ ['field' => 'table_column', 'order' => 'ASC|DESC' ] ]
 	 * @type string $status The status to fetch for the query.
+	 * @type string $search The string to search in columns.
 	 * @type int $created_by The user id who created the record.
 	 * @type int[] $id__in Array of record id.
 	 * }
@@ -557,6 +558,16 @@ class DataStoreBase implements DataStoreInterface {
 			$status                    = $args[ $this->status ] ?? null;
 
 			$query = "SELECT * FROM {$table} WHERE 1=1";
+
+			if ( ! empty( $args['search'] ) ) {
+				$query .= ' AND (';
+				foreach ( $columns as $index => $column ) {
+					$query .= $index > 0 ? ' OR' : '';
+					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					$query .= $wpdb->prepare( " $column LIKE %s", '%' . $args['search'] . '%' );
+				}
+				$query .= ')';
+			}
 
 			if ( isset( $args[ $this->created_by ] ) && is_numeric( $args[ $this->created_by ] ) ) {
 				// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
