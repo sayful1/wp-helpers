@@ -19,6 +19,8 @@ class ImageUploader extends BaseField {
 		if ( is_string( $value ) ) {
 			$value = wp_strip_all_tags( rtrim( $value, ',' ) );
 			$value = array_filter( array_map( 'intval', explode( ',', $value ) ) );
+		} elseif ( is_numeric( $value ) ) {
+			$value = [ intval( $value ) ];
 		}
 
 		return is_array( $value ) ? $value : [];
