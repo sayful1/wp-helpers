@@ -1,3 +1,7 @@
+#### 1.12.0
+
+* Update `\Stackonet\WP\Framework\Fields\ImageUploader` field class.
+
 #### 1.11.0
 
 * Add search option for `DataStoreBase::find_multiple()` method.

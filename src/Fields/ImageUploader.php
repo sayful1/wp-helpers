@@ -10,6 +10,33 @@ use Stackonet\WP\Framework\Supports\Validate;
 class ImageUploader extends BaseField {
 
 	/**
+	 * If it is gallery media
+	 *
+	 * @return bool
+	 */
+	public function is_gallery(): bool {
+		return Validate::checked( $this->get_setting( 'gallery', false ) );
+	}
+
+	/**
+	 * If it support multiple value
+	 *
+	 * @return bool
+	 */
+	public function is_multiple(): bool {
+		return Validate::checked( $this->get_setting( 'multiple', false ) );
+	}
+
+	/**
+	 * Get media type
+	 *
+	 * @return mixed
+	 */
+	public function get_media_type() {
+		return $this->get_setting( 'media_type', 'image' );
+	}
+
+	/**
 	 * Get value
 	 *
 	 * @return array
@@ -32,7 +59,7 @@ class ImageUploader extends BaseField {
 	 * @inheritDoc
 	 */
 	public function render(): string {
-		if ( Validate::checked( $this->get_setting( 'gallery', false ) ) ) {
+		if ( $this->is_gallery() ) {
 			return $this->render_gallery();
 		}
 
@@ -46,16 +73,19 @@ class ImageUploader extends BaseField {
 	 */
 	public function render_image(): string {
 		$value       = $this->get_value();
-		$button_text = $value ? 'Update Image' : 'Set Image';
+		$has_value   = count( array_filter( $value ) );
+		$button_text = $has_value ? 'Update Image' : 'Set Image';
 		global $post;
-		$attrs = [
+		$button_attrs = [
 			'class'                  => 'button',
 			'href'                   => esc_url( get_upload_iframe_src( 'image', $post->ID ) ),
 			'data-title'             => esc_attr( $this->get_setting( 'modal_title', 'Select or Upload Image' ) ),
 			'data-button-text'       => esc_attr( $button_text ),
 			'data-media-frame'       => 'select',
-			'data-input-target-name' => $this->get_name(),
 			'data-preview-target'    => '.field-media-frame-select__list',
+			'data-input-target-name' => $this->get_name(),
+			'data-multiple'          => $this->is_multiple(),
+			'data-type'              => $this->get_media_type(),
 		];
 
 		$input_attrs = [
@@ -65,13 +95,23 @@ class ImageUploader extends BaseField {
 			'value' => implode( ',', $value ),
 		];
 
-		$html  = '<div class="field-media-frame-select">';
+		$remove_button_attrs = [
+			'class'                  => 'button field-media-frame-select__remove-btn',
+			'data-input-target-name' => $this->get_name(),
+			'data-preview-target'    => '.field-media-frame-select__list',
+			'data-media-frame-reset' => 'select',
+		];
+
+		$html = '<div class="field-media-frame-select">';
 		$html .= '<input ' . $this->array_to_attributes( $input_attrs ) . ' />';
-		$html .= '<a ' . $this->array_to_attributes( $attrs ) . '>' . esc_html( $button_text ) . '</a>';
+		$html .= '<a ' . $this->array_to_attributes( $button_attrs ) . '>' . esc_html( $button_text ) . '</a>';
+		if ( $has_value ) {
+			$html .= ' <a ' . $this->array_to_attributes( $remove_button_attrs ) . '>Remove</a>';
+		}
 		$html .= '<ul class="field-media-frame-select__list">';
 		if ( $value ) {
 			foreach ( $value as $thumb ) {
-				$html .= '<li>' . wp_get_attachment_image( $thumb, [ 150, 150 ] ) . '</li>';
+				$html .= '<li>' . wp_get_attachment_image( $thumb, [ 150, 150 ], true ) . '</li>';
 			}
 		}
 		$html .= '</ul>';

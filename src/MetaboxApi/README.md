@@ -416,41 +416,80 @@
 <summary>Media Frame Select JavaScript code</summary>
 
 ```js
-jQuery('[data-media-frame="select"]').on('click', function (event) {
-    event.preventDefault();
-    let dataset = event.target.dataset;
-    var frame = new wp.media.view.MediaFrame.Select({
-        title: dataset.title,
-        multiple: false,
-        library: {
-            order: 'ASC',
-            orderby: 'title',
-            type: 'image',
-            search: null,
-            uploadedTo: null
+const defaultArgs      = {
+    title: 'Featured image',
+    buttonText: 'Set featured image',
+    inputTargetName: '',
+    previewTarget: '',
+    container: '.field-media-frame-select',
+    type: 'image',
+    multiple: false,
+};
+const listItemTemplate = (src) => {
+    return '<li><img src=\'' + src + '\' width=\'150\' height=\'150\' class=\'attachment-150x150 size-150x150\' loading=\'lazy\' /></li>';
+};
+jQuery( '[data-media-frame="select"]' ).on(
+    'click',
+    function(event) {
+        event.preventDefault();
+        const dataset = Object.assign( defaultArgs, event.target.dataset );
+        const frame   = new wp.media.view.MediaFrame.Select(
+            {
+                title: dataset.title,
+                multiple: dataset.multiple,
+                library: {
+                    order: 'ASC',
+                    orderby: 'title',
+                    type: dataset.type,
+                    search: null,
+                    uploadedTo: null,
+                },
+                button: {
+                    text: dataset.buttonText,
+                },
+            },
+        );
+
+        frame.on(
+            'select',
+            function() {
+                let selectionCollection = frame.state().get( 'selection' ),
+                    ids                 = [],
+                    html                = '';
+                selectionCollection.forEach(
+                    function(attachment) {
+                        ids.push( attachment.id );
+                        if ('video' === attachment.attributes.type) {
+                            let src = attachment.attributes.thumb.src || attachment.attributes.image.src;
+                            html   += listItemTemplate( src );
+                        } else if ('image' === attachment.attributes.type) {
+                            let src = attachment.attributes.sizes.thumbnail.url || attachment.attributes.sizes.full.url;
+                            html   += listItemTemplate( src );
+                        }
+                    },
+                );
+
+                const container = jQuery( event.target ).closest( dataset.container );
+                container.find( `[name = "${dataset.inputTargetName}"]` ).val( ids.toString() );
+                container.find( dataset.previewTarget ).html( html );
+            },
+        );
+
+        // Open the modal.
+        frame.open();
+    },
+);
+jQuery( '[data-media-frame-reset="select"]' )
+    .on(
+        'click',
+        function(event) {
+            event.preventDefault();
+            let dataset = Object.assign( defaultArgs, event.target.dataset );
+            jQuery( `[name = "${dataset.inputTargetName}"]` ).val( '' );
+            jQuery( dataset.previewTarget ).html( '' );
         },
-        button: {
-            text: dataset.buttonText
-        }
-    });
+    );
 
-    frame.on('select', function () {
-        var selectionCollection = frame.state().get('selection'),
-            ids = [],
-            html = '';
-        selectionCollection.forEach(function (attachment) {
-            ids.push(attachment.id);
-            let src = attachment.attributes.sizes.thumbnail || attachment.attributes.sizes.full;
-            html += `<li><img src="${src.url}" width="150" height="150" class="attachment-150x150 size-150x150" loading="lazy"></li>`;
-        })
-
-        jQuery(`[name="${dataset.inputTargetName}"]`).val(ids.toString());
-        jQuery(dataset.previewTarget).html(html);
-    });
-
-    // Open the modal.
-    frame.open();
-});
 ```
 
 </details>
