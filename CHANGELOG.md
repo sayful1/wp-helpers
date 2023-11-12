@@ -1,3 +1,7 @@
+#### 1.13.0
+
+* Update `\StackonetWPFrameworkTest\Media\UploadedFileTest` class.
+
 #### 1.12.0
 
 * Update `\Stackonet\WP\Framework\Fields\ImageUploader` field class.

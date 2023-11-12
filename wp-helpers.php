@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Stackonet WP Helper
  * Description: A powerful WordPress plugin to extend functionality to your WordPress site.
- * Version: 1.11.0
+ * Version: 1.13.0
  * Author: Stackonet Services (Pvt.) Ltd.
  * Author URI: https://stackonet.com
  * Requires at least: 6.0

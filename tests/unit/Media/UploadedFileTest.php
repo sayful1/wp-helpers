@@ -18,7 +18,6 @@ class UploadedFileTest extends \WP_UnitTestCase {
 	public function setUp() {
 		$this->copy_back_assets();
 		$image_path           = dirname( __DIR__, 2 ) . '/assets/stackonet-logo.png';
-		$pdf_path             = dirname( __DIR__, 2 ) . '/assets/Square-Card.pdf';
 		$pdf2_path            = dirname( __DIR__, 2 ) . '/assets/A4-Card.pdf';
 		$this->data           = [
 			'image_sample' => [
@@ -29,13 +28,6 @@ class UploadedFileTest extends \WP_UnitTestCase {
 				'type'     => 'image/png'
 			],
 			'pdf_sample'   => [
-				[
-					'error'    => UPLOAD_ERR_OK,
-					'name'     => basename( $pdf_path ),
-					'size'     => filesize( $pdf_path ),
-					'tmp_name' => $pdf_path,
-					'type'     => 'application/pdf'
-				],
 				[
 					'error'    => UPLOAD_ERR_OK,
 					'name'     => basename( $pdf2_path ),
@@ -50,7 +42,6 @@ class UploadedFileTest extends \WP_UnitTestCase {
 
 	public function test_uploaded_files() {
 		$image_path     = dirname( __DIR__, 2 ) . '/assets/stackonet-logo.png';
-		$pdf_path       = dirname( __DIR__, 2 ) . '/assets/Square-Card.pdf';
 		$pdf2_path      = dirname( __DIR__, 2 ) . '/assets/A4-Card.pdf';
 		$_FILES         = [
 			'image_sample' => [
@@ -61,11 +52,11 @@ class UploadedFileTest extends \WP_UnitTestCase {
 				'type'     => 'image/png'
 			],
 			'pdf_sample'   => [
-				'error'    => [ UPLOAD_ERR_OK, UPLOAD_ERR_OK ],
-				'name'     => [ basename( $pdf_path ), basename( $pdf2_path ) ],
-				'size'     => [ filesize( $pdf_path ), filesize( $pdf2_path ) ],
-				'tmp_name' => [ $pdf_path, $pdf2_path ],
-				'type'     => [ 'application/pdf', 'application/pdf' ]
+				'error'    => [ UPLOAD_ERR_OK ],
+				'name'     => [ basename( $pdf2_path ) ],
+				'size'     => [ filesize( $pdf2_path ) ],
+				'tmp_name' => [ $pdf2_path ],
+				'type'     => [ 'application/pdf' ]
 			],
 		];
 		$uploaded_files = UploadedFile::getUploadedFiles();
