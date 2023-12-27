@@ -24,7 +24,7 @@ class Validate {
 	/**
 	 * Check if the value is present.
 	 *
-	 * @param string|string[] $value The value to be validated.
+	 * @param  string|string[] $value  The value to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -37,7 +37,7 @@ class Validate {
 	/**
 	 * Check if the value is formatted as a valid URL.
 	 *
-	 * @param mixed $value The url to be validated.
+	 * @param  mixed $value  The url to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -48,7 +48,7 @@ class Validate {
 	/**
 	 * Check if the value is a valid email.
 	 *
-	 * @param mixed $value The email to be validated.
+	 * @param  mixed $value  The email to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -60,7 +60,7 @@ class Validate {
 	 * Check if the value is an integer, including
 	 * numbers within strings. 1 and '1' are both classed as integers.
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -82,7 +82,7 @@ class Validate {
 	 * Octal (e.g. 0777) notation is allowed too
 	 * but only without sign, decimal and exponential part.
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -93,7 +93,7 @@ class Validate {
 	/**
 	 * Check if the value is alphabetic letters only.
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -104,7 +104,7 @@ class Validate {
 	/**
 	 * Check if the value is alphanumeric.
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -116,7 +116,7 @@ class Validate {
 	 * Check if the value is alphanumeric.
 	 * Dashes and underscores are permitted.
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -132,7 +132,7 @@ class Validate {
 	/**
 	 * Check if the value is an array
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -144,9 +144,9 @@ class Validate {
 	 * Check if string length is greater than or equal to given int.
 	 * To check the size of a number, pass the optional number option.
 	 *
-	 * @param mixed     $value The value to be validated.
-	 * @param float|int $min_value The minimum value to be validated against.
-	 * @param boolean   $is_number If the value is a number.
+	 * @param  mixed     $value  The value to be validated.
+	 * @param  float|int $min_value  The minimum value to be validated against.
+	 * @param  boolean   $is_number  If the value is a number.
 	 *
 	 * @return boolean
 	 */
@@ -165,9 +165,9 @@ class Validate {
 	 * Check if string length is less than or equal to given int.
 	 * To check the size of a number, pass the optional number option.
 	 *
-	 * @param mixed         $value The value to be validated.
-	 * @param integer|float $max_value The maximum value to be validated against.
-	 * @param boolean       $is_number If the value is a number.
+	 * @param  mixed         $value  The value to be validated.
+	 * @param  integer|float $max_value  The maximum value to be validated against.
+	 * @param  boolean       $is_number  If the value is a number.
 	 *
 	 * @return boolean
 	 */
@@ -185,7 +185,7 @@ class Validate {
 	/**
 	 * Check if the given input is a valid date.
 	 *
-	 * @param mixed $value The value to be validated. The value must be at ISO 8601 (YYYY-MM-DD) format.
+	 * @param  mixed $value  The value to be validated. The value must be at ISO 8601 (YYYY-MM-DD) format.
 	 *
 	 * @return boolean
 	 */
@@ -200,7 +200,7 @@ class Validate {
 	/**
 	 * Check if the given input is a valid time.
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return bool
 	 */
@@ -220,7 +220,7 @@ class Validate {
 	/**
 	 * Check if the given input is a valid datetime format Y-m-dTH:i.
 	 *
-	 * @param mixed $value The value to be validated. The value must be at ISO 8601 (YYYY-MM-DD) format.
+	 * @param  mixed $value  The value to be validated. The value must be at ISO 8601 (YYYY-MM-DD) format.
 	 *
 	 * @return boolean
 	 */
@@ -243,7 +243,7 @@ class Validate {
 	 * one of the following values: 'yes', 'on', '1', 1, true, or 'true'.
 	 * This can be used for determining if an HTML checkbox has been checked.
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -254,7 +254,7 @@ class Validate {
 	/**
 	 * Check if the value is a valid IP address.
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -265,7 +265,7 @@ class Validate {
 	/**
 	 * Check if the value is a boolean value.
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return boolean
 	 */
@@ -280,13 +280,17 @@ class Validate {
 	/**
 	 * Check if value is json
 	 *
-	 * @param mixed $string The value to be checked.
+	 * @param  mixed $string  The value to be checked.
 	 *
 	 * @return bool
 	 */
 	public static function json( $string ): bool {
 		if ( ! is_string( $string ) ) {
 			return false;
+		}
+		// PHP 8.3: Remove this check when it's minimum PHP version will set 8.3.
+		if ( function_exists( 'json_validate' ) ) {
+			return json_validate( $string );
 		}
 		json_decode( $string );
 
@@ -297,10 +301,10 @@ class Validate {
 	 * Validate as phone number
 	 * However, this will also match numbers that are not a valid phone number.
 	 *
-	 * @param mixed $phone_e164 The phone number in E164 format.
+	 * @param  mixed $phone_e164  The phone number in E164 format.
 	 * Format must be a number up to fifteen digits in length
 	 * Starting with a ‘+’ sign, country code (1 to 3 digits), subscriber number (max 12 digits).
-	 * @param int   $min_length Minimum number length.
+	 * @param  int   $min_length  Minimum number length.
 	 *
 	 * @return bool
 	 */
@@ -313,7 +317,7 @@ class Validate {
 	/**
 	 * Check if the value is user username or email address
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return bool
 	 */
@@ -324,7 +328,7 @@ class Validate {
 	/**
 	 * Check if the value is user username
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return bool
 	 */
@@ -335,7 +339,7 @@ class Validate {
 	/**
 	 * Check if the value is user email address
 	 *
-	 * @param mixed $value The value to be validated.
+	 * @param  mixed $value  The value to be validated.
 	 *
 	 * @return bool
 	 */
