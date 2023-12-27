@@ -68,13 +68,13 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 		$message = str_replace( '{{total_items}}', $total_items, $this->admin_notice_heading );
 
 		?>
-        <div class="notice notice-info is-dismissible">
-            <p><?php echo esc_html( $message ); ?></p>
-            <p>
-                <a href="<?php echo esc_url( $this->get_task_view_url() ); ?>" class="button button-primary">View</a>
-                <a href="<?php echo esc_url( $this->get_task_clear_url() ); ?>" class="button is-error">Clear Task</a>
-            </p>
-        </div>
+		<div class="notice notice-info is-dismissible">
+			<p><?php echo esc_html( $message ); ?></p>
+			<p>
+				<a href="<?php echo esc_url( $this->get_task_view_url() ); ?>" class="button button-primary">View</a>
+				<a href="<?php echo esc_url( $this->get_task_clear_url() ); ?>" class="button is-error">Clear Task</a>
+			</p>
+		</div>
 		<?php
 	}
 
@@ -164,8 +164,8 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	/**
 	 * Get run now action url.
 	 *
-	 * @param string|int $batch_key Batch key.
-	 * @param string|int $index Item index.
+	 * @param  string|int $batch_key  Batch key.
+	 * @param  string|int $index  Item index.
 	 *
 	 * @return string
 	 */
@@ -182,8 +182,8 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	/**
 	 * Get run now action url.
 	 *
-	 * @param string|int $batch_key Batch key.
-	 * @param string|int $index Item index.
+	 * @param  string|int $batch_key  Batch key.
+	 * @param  string|int $index  Item index.
 	 *
 	 * @return string
 	 */
@@ -200,7 +200,7 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	/**
 	 * Get run now action url.
 	 *
-	 * @param string|int $batch_key Batch key.
+	 * @param  string|int $batch_key  Batch key.
 	 *
 	 * @return string
 	 */
@@ -263,8 +263,8 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	/**
 	 * Remove a item from batches
 	 *
-	 * @param string|int $batch_key Batch key name.
-	 * @param string|int $item_index Item index.
+	 * @param  string|int $batch_key  Batch key name.
+	 * @param  string|int $item_index  Item index.
 	 *
 	 * @return void
 	 */
@@ -274,14 +274,18 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 		if ( isset( $batch_items[ $item_index ] ) ) {
 			unset( $batch_items[ $item_index ] );
 
-			$this->update( $batch_key, $batch_items );
+			if ( count( $batch_items ) ) {
+				$this->update( $batch_key, $batch_items );
+			} else {
+				$this->delete( $batch_key );
+			}
 		}
 	}
 
 	/**
 	 * View pending task items list
 	 *
-	 * @param array $batches List of batches.
+	 * @param  array $batches  List of batches.
 	 *
 	 * @return void
 	 */
@@ -345,8 +349,8 @@ abstract class BackgroundProcessWithUiHelper extends BackgroundProcess {
 	/**
 	 * Build ajax URL
 	 *
-	 * @param string $task Ajax task.
-	 * @param array $args URI parameters.
+	 * @param  string $task  Ajax task.
+	 * @param  array  $args  URI parameters.
 	 *
 	 * @return string
 	 */
