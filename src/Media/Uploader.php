@@ -122,7 +122,7 @@ class Uploader {
 	 *
 	 * @return int|WP_Error
 	 */
-	protected static function add_attachment_data( UploadedFile $file, string $file_path ) {
+	public static function add_attachment_data( UploadedFile $file, string $file_path ) {
 		$upload_dir = wp_upload_dir();
 		$data       = [
 			'guid'           => str_replace( $upload_dir['basedir'], $upload_dir['baseurl'], $file_path ),

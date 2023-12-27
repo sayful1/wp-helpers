@@ -4,9 +4,12 @@ namespace Stackonet\WP\Framework\Media;
 
 use BadMethodCallException;
 use finfo;
+use Imagick;
+use ImagickException;
 use InvalidArgumentException;
 use RuntimeException;
 use Stackonet\WP\Framework\Interfaces\UploadedFileInterface;
+use WP_Error;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -96,6 +99,57 @@ class UploadedFile implements UploadedFileInterface {
 	}
 
 	/**
+	 * Read a file from file path.
+	 *
+	 * @param  string      $filepath  The filepath or uploaded temp filepath.
+	 * @param  string|null $name  Optional filename to modify client filename.
+	 *
+	 * @return false|static
+	 */
+	public static function read_from_filepath( string $filepath, ?string $name = null ) {
+		if ( file_exists( $filepath ) ) {
+			if ( empty( $name ) ) {
+				$name = basename( $filepath );
+			}
+			$mime_type = mime_content_type( $filepath );
+
+			$self            = new static( $filepath, $name, $mime_type, filesize( $filepath ), UPLOAD_ERR_OK, true );
+			$self->mime_type = $mime_type;
+
+			return $self;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Read a file from url
+	 *
+	 * @param  string      $file_url  The remote file url.
+	 * @param  string|null $name  Optional filename.
+	 *
+	 * @return WP_Error|static
+	 */
+	public static function read_from_url( string $file_url, ?string $name = null ) {
+		$tmp_name = get_transient( md5( $file_url ) );
+		if ( false === $tmp_name ) {
+			$tmp_name = download_url( $file_url );
+		} elseif ( ! file_exists( $tmp_name ) ) {
+			$tmp_name = download_url( $file_url );
+		}
+		if ( is_wp_error( $tmp_name ) ) {
+			return $tmp_name;
+		}
+		set_transient( md5( $file_url ), $tmp_name, HOUR_IN_SECONDS );
+
+		if ( empty( $name ) ) {
+			$name = basename( $file_url );
+		}
+
+		return static::read_from_filepath( $tmp_name, $name );
+	}
+
+	/**
 	 * Parse a non-normalized, i.e. $_FILES superglobal, tree of uploaded file data.
 	 *
 	 * @param array $uploaded_files The non-normalized tree of uploaded file data.
@@ -126,7 +180,7 @@ class UploadedFile implements UploadedFileInterface {
 			} else {
 				$sub_array = array();
 				foreach ( $uploaded_file['error'] as $file_index => $error ) {
-					// normalise sub array and re-parse to move the input's keyname up a level.
+					// normalise sub array and reparse to move the input's keyname up a level.
 					$sub_array[ $file_index ]['name']     = $uploaded_file['name'][ $file_index ];
 					$sub_array[ $file_index ]['type']     = $uploaded_file['type'][ $file_index ];
 					$sub_array[ $file_index ]['tmp_name'] = $uploaded_file['tmp_name'][ $file_index ];
@@ -253,6 +307,52 @@ class UploadedFile implements UploadedFileInterface {
 		}
 
 		$this->moved = true;
+	}
+
+	/**
+	 * Save as webp image
+	 *
+	 * @param  string      $directory  The directory where it will be saved.
+	 * @param  string|null $filename Optional filename.
+	 * @param  int         $compression_quality Compression quality.
+	 *
+	 * @return false|string
+	 */
+	public function save_as_webp_image( string $directory, ?string $filename = null, int $compression_quality = 83 ) {
+		if ( ! $this->is_image() ) {
+			return false;
+		}
+		if ( empty( $filename ) ) {
+			$filename = sprintf( '%s.webp', wp_generate_uuid4() );
+		}
+
+		$directory     = rtrim( $directory, DIRECTORY_SEPARATOR );
+		$new_file_path = $directory . DIRECTORY_SEPARATOR . $filename;
+
+		if ( class_exists( Imagick::class ) ) {
+			try {
+				$image = new Imagick( $this->get_file() );
+				$image->setImageFormat( 'webp' );
+				$image->setImageCompressionQuality( min( $compression_quality, 99 ) );
+				$image->writeImage( $new_file_path );
+
+				$image->destroy();
+
+				// Set correct file permissions.
+				$stat  = stat( dirname( $new_file_path ) );
+				$perms = $stat['mode'] & 0000666;
+				chmod( $new_file_path, $perms );
+
+				unlink( $this->get_file() );
+				$this->moved = true;
+
+				return $new_file_path;
+			} catch ( ImagickException $e ) {
+				return false;
+			}
+		}
+
+		return false;
 	}
 
 	/**
