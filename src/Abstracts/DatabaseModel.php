@@ -18,10 +18,10 @@ defined( 'ABSPATH' ) || exit;
  *
  * @method static int[] create_multiple( array $data )
  * @method static bool update_multiple( array $data )
- * @method static DatabaseModel|ArrayObject find_by_id( int $id )
- * @method static DatabaseModel|ArrayObject find_single( int $id )
- * @method static array|DatabaseModel[] find( array $args = [] )
- * @method static array|DatabaseModel[] find_multiple( array $args = [] )
+ * @method static static|ArrayObject find_by_id( int $id )
+ * @method static static|ArrayObject find_single( int $id )
+ * @method static array|static[] find( array $args = [] )
+ * @method static array|static[] find_multiple( array $args = [] )
  * @method static int create( array $data = [] )
  * @method static bool update( array $data = [] )
  * @method static bool trash( int $id = 0 )
@@ -124,7 +124,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Model constructor.
 	 *
-	 * @param  mixed  $data  The data to be read.
+	 * @param  mixed $data  The data to be read.
 	 */
 	public function __construct( $data = [] ) {
 		$this->primary_key      = static::get_primary_key( $this->get_table_name() );
@@ -137,26 +137,9 @@ abstract class DatabaseModel extends Data {
 	}
 
 	/**
-	 * Find multiple records from database
-	 *
-	 * @param  array  $args  The arguments for query.
-	 *
-	 * @return array|static[]
-	 */
-	protected function __find_multiple( array $args = [] ): array {
-		$items = $this->get_data_store()->find_multiple( $args );
-		$data  = [];
-		foreach ( $items as $item ) {
-			$data[] = new static( $item );
-		}
-
-		return $data;
-	}
-
-	/**
 	 * Find record by id
 	 *
-	 * @param  int  $id  The id of the record.
+	 * @param  int $id  The id of the record.
 	 *
 	 * @return ArrayObject|static
 	 */
@@ -169,7 +152,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Method to read a record.
 	 *
-	 * @param  mixed  $data  The data to be read.
+	 * @param  mixed $data  The data to be read.
 	 *
 	 * @return array
 	 */
@@ -178,27 +161,14 @@ abstract class DatabaseModel extends Data {
 			return $data->get_data();
 		}
 
-		$data_store = $this->get_data_store();
-
+		$_data = [];
 		if ( is_array( $data ) && count( $data ) ) {
-			$data = $data_store->format_item_for_output( $data );
-			if ( $data instanceof Data ) {
-				return $data->get_data();
-			} elseif ( is_array( $data ) ) {
-				return $data;
+			foreach ( $data as $key => $value ) {
+				$_data[ $key ] = maybe_unserialize( $value );
 			}
 		}
 
-		if ( is_numeric( $data ) ) {
-			$data = $data_store->find_single( $data );
-			if ( is_array( $data ) ) {
-				return $data;
-			} elseif ( $data instanceof Data ) {
-				return $data->get_data();
-			}
-		}
-
-		return $data_store->get_default_data( $data_store->get_table_name() );
+		return $_data;
 	}
 
 	/**
@@ -230,8 +200,8 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Handle store method call
 	 *
-	 * @param  string  $name  The method name.
-	 * @param  array|mixed  $arguments  The method arguments.
+	 * @param  string      $name  The method name.
+	 * @param  array|mixed $arguments  The method arguments.
 	 *
 	 * @return mixed
 	 * @throws BadMethodCallException When method not found.
@@ -280,10 +250,8 @@ abstract class DatabaseModel extends Data {
 				return $response;
 			}
 		}
-		if ( in_array( $name, [ 'find_multiple', 'find_single' ], true ) ) {
-			$name = '__' . $name;
-
-			return $this->$name( ...$arguments );
+		if ( 'find_single' === $name ) {
+			return $this->__find_single( $arguments[0] );
 		}
 		if ( method_exists( $data_store, $name ) ) {
 			return call_user_func_array( [ $data_store, $name ], $arguments );
@@ -295,8 +263,8 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Handle store method call
 	 *
-	 * @param  string  $name  The method name.
-	 * @param  array|mixed  $arguments  The method arguments.
+	 * @param  string      $name  The method name.
+	 * @param  array|mixed $arguments  The method arguments.
 	 *
 	 * @return mixed
 	 * @throws BadMethodCallException When method not found.

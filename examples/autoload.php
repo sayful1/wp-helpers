@@ -1,5 +1,6 @@
 <?php
 
+use Stackonet\WP\Examples\DatabaseModels\DatabaseModelsManager;
 use Stackonet\WP\Examples\Faqs\FaqManager;
 use Stackonet\WP\Examples\Testimonial\TestimonialManager;
 use Stackonet\WP\Examples\WordPressCore\MailTrap;
@@ -46,5 +47,6 @@ add_action(
 		SettingPage::init()->add_settings_page();
 		MetaboxTest::init();
 		TokenAuth::init();
+		DatabaseModelsManager::init();
 	}
 );

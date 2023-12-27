@@ -102,7 +102,7 @@ class ImageUploader extends BaseField {
 			'data-media-frame-reset' => 'select',
 		];
 
-		$html = '<div class="field-media-frame-select">';
+		$html  = '<div class="field-media-frame-select">';
 		$html .= '<input ' . $this->array_to_attributes( $input_attrs ) . ' />';
 		$html .= '<a ' . $this->array_to_attributes( $button_attrs ) . '>' . esc_html( $button_text ) . '</a>';
 		if ( $has_value ) {

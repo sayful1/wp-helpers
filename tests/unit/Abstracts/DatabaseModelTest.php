@@ -85,6 +85,7 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 			[ 'commission' => 3.5, 'comment' => 'Optional comments 3' ]
 		] );
 
+		$this->assertEquals( 3, count( $ids ) );
 		$item1 = UserEarningModel::find_single( $ids[0] );
 		$this->assertEquals( 0.5, $item1->get_prop( 'commission' ) );
 
@@ -96,7 +97,7 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 		$this->assertEquals( 3.33, $item1_updated->get_prop( 'commission' ) );
 
 		$is_updated = UserEarningModel::batch_update( [
-			[ 'commission' => 4.5, 'comment' => 'This one is not going to update as there is not id.' ],
+			[ 'commission' => 4.5, 'comment' => 'This one is not going to update as there is no id.' ],
 			[ 'id' => $ids[1], 'commission' => 4.5 ],
 			[ 'id' => $ids[2], 'commission' => 5.5 ],
 		] );
@@ -118,13 +119,13 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 		$id2 = UserEarningModel::create( [ 'user_id' => 1, 'commission' => 1.5, 'comment' => 'Optional comments 12' ] );
 
 		$item1 = UserEarningModel::find_single( $id1 );
-		$this->assertNull( $item1->get_prop( 'deleted_at' ) );
+		$this->assertNull( $item1->get_prop( 'deleted_at', null ) );
 		$item1->trash();
 		$this->assertNotNull( $item1->get_prop( 'deleted_at' ) );
 
 		UserEarningModel::restore( $id1 );
 		$item1 = UserEarningModel::find_single( $id1 );
-		$this->assertNull( $item1->get_prop( 'deleted_at' ) );
+		$this->assertNull( $item1->get_prop( 'deleted_at', null ) );
 
 		UserEarningModel::batch_trash( [ $id1, $id2 ] );
 		$item1 = UserEarningModel::find_single( $id1 );
@@ -195,6 +196,11 @@ class DatabaseModelTest extends \WP_UnitTestCase {
 		$item2 = ( new UserEarningModel() )->get_data_store()->read( [ 'id__in' => [ $id ] ] );
 		$this->assertIsArray( $item2 );
 //		$this->assertIsArray( $item2[0] );
+	}
+
+	public function test_statuses_count() {
+		$status = UserEarningModel::get_statuses_count();
+		$this->assertIsArray( $status );
 	}
 
 	public function test_query_builder() {

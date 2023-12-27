@@ -42,7 +42,7 @@ class QueryBuilder {
 	/**
 	 * Get query builder
 	 *
-	 * @param  string $table Table name
+	 * @param  string  $table Table name
 	 * @param ?string $modal Modal object.
 	 *
 	 * @return static

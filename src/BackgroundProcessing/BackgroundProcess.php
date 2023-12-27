@@ -151,7 +151,7 @@ abstract class BackgroundProcess extends AsyncRequest {
 	 * Update a batch's queued items.
 	 *
 	 * @param string $key Key.
-	 * @param array $data Data.
+	 * @param array  $data Data.
 	 *
 	 * @return $this
 	 */
@@ -294,7 +294,7 @@ abstract class BackgroundProcess extends AsyncRequest {
 	 * Generates a unique key based on micro time. Queue items are
 	 * given a unique key so that they can be merged upon save.
 	 *
-	 * @param int $length Optional max length to trim key to, defaults to 64 characters.
+	 * @param int    $length Optional max length to trim key to, defaults to 64 characters.
 	 * @param string $key Optional string to append to identifier before hash, defaults to "batch".
 	 *
 	 * @return string

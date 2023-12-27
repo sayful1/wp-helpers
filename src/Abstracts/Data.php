@@ -45,7 +45,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Data constructor.
 	 *
-	 * @param mixed $data The data to be read.
+	 * @param  mixed $data  The data to be read.
 	 */
 	public function __construct( $data = [] ) {
 		if ( is_array( $data ) && count( $data ) > 0 ) {
@@ -65,7 +65,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Set ID.
 	 *
-	 * @param int|string $id ID.
+	 * @param  int|string $id  ID.
 	 */
 	public function set_id( $id ) {
 		$this->id = absint( $id );
@@ -83,7 +83,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Get collection item for key
 	 *
-	 * @param string $name The data key.
+	 * @param  string $name  The data key.
 	 *
 	 * @return mixed
 	 */
@@ -94,7 +94,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Does this collection have a given key?
 	 *
-	 * @param string $name The data key.
+	 * @param  string $name  The data key.
 	 *
 	 * @return bool
 	 */
@@ -111,18 +111,19 @@ class Data implements ArrayAccess, JsonSerializable {
 		if ( count( $this->get_changes() ) ) {
 			return array_replace_recursive( $this->get_data(), $this->get_changes() );
 		}
+
 		return $this->get_data();
 	}
 
 	/**
 	 * Does this collection have a given key?
 	 *
-	 * @param string $prop The data key.
+	 * @param  string $prop  The data key.
 	 *
 	 * @return bool
 	 */
 	public function has_prop( string $prop ): bool {
-		return array_key_exists( $prop, $this->data ) || array_key_exists( $prop, $this->changes );
+		return isset( $this->data[ $prop ] ) || isset( $this->changes[ $prop ] );
 	}
 
 	/**
@@ -130,8 +131,8 @@ class Data implements ArrayAccess, JsonSerializable {
 	 *
 	 * This stores changes in a special array, so we can track what needs saving the DB later.
 	 *
-	 * @param string $prop Name of prop to set.
-	 * @param mixed  $value Value of the prop.
+	 * @param  string $prop  Name of prop to set.
+	 * @param  mixed  $value  Value of the prop.
 	 */
 	public function set_prop( string $prop, $value ) {
 		if ( true === $this->object_read ) {
@@ -146,14 +147,17 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Get collection item for key
 	 *
-	 * @param string $prop The data key.
-	 * @param mixed  $default The default value to return if data key does not exist.
+	 * @param  string $prop  The data key.
+	 * @param  mixed  $default  The default value to return if data key does not exist.
 	 *
 	 * @return mixed The key's value, or the default value
 	 */
 	public function get_prop( string $prop, $default = '' ) {
-		if ( $this->has_prop( $prop ) ) {
-			return array_key_exists( $prop, $this->changes ) ? $this->changes[ $prop ] : $this->data[ $prop ];
+		if ( isset( $this->changes[ $prop ] ) ) {
+			return $this->changes[ $prop ];
+		}
+		if ( isset( $this->data[ $prop ] ) ) {
+			return $this->data[ $prop ];
 		}
 
 		return $default;
@@ -162,13 +166,13 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Remove item from collection
 	 *
-	 * @param string $prop The data key.
+	 * @param  string $prop  The data key.
 	 */
 	public function remove_prop( string $prop ) {
-		if ( array_key_exists( $prop, $this->changes ) ) {
+		if ( isset( $this->changes[ $prop ] ) ) {
 			unset( $this->changes[ $prop ] );
 		}
-		if ( array_key_exists( $prop, $this->data ) ) {
+		if ( isset( $this->data[ $prop ] ) ) {
 			unset( $this->data[ $prop ] );
 		}
 	}
@@ -176,7 +180,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Set a collection of props in one go.
 	 *
-	 * @param array $props Key value pairs to set.
+	 * @param  array $props  Key value pairs to set.
 	 */
 	public function set_props( array $props ) {
 		foreach ( $props as $prop => $value ) {
@@ -209,7 +213,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Set object read property.
 	 *
-	 * @param boolean $read Should read?.
+	 * @param  boolean $read  Should read?.
 	 */
 	public function set_object_read( bool $read = true ) {
 		$this->object_read = $read;
@@ -227,7 +231,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Whether an offset exists
 	 *
-	 * @param mixed $offset An offset to check for.
+	 * @param  mixed $offset  An offset to check for.
 	 *
 	 * @return boolean true on success or false on failure.
 	 */
@@ -238,7 +242,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Offset to retrieve
 	 *
-	 * @param mixed $offset The offset to retrieve.
+	 * @param  mixed $offset  The offset to retrieve.
 	 *
 	 * @return mixed Can return all value types.
 	 */
@@ -250,8 +254,8 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Offset to set
 	 *
-	 * @param mixed $offset The offset to assign the value to.
-	 * @param mixed $value The value to set.
+	 * @param  mixed $offset  The offset to assign the value to.
+	 * @param  mixed $value  The value to set.
 	 *
 	 * @return void
 	 */
@@ -263,7 +267,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Offset to unset
 	 *
-	 * @param mixed $offset The offset to unset.
+	 * @param  mixed $offset  The offset to unset.
 	 *
 	 * @return void
 	 */
@@ -288,7 +292,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Does this collection have a given key?
 	 *
-	 * @param string $key The data key.
+	 * @param  string $key  The data key.
 	 *
 	 * @return bool
 	 *
@@ -302,8 +306,8 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Set collection item
 	 *
-	 * @param string $key The data key.
-	 * @param mixed  $value The data value.
+	 * @param  string $key  The data key.
+	 * @param  mixed  $value  The data value.
 	 *
 	 * @deprecated 1.7.0
 	 * @see \Stackonet\WP\Framework\Abstracts\Data::set_prop()
@@ -315,8 +319,8 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Get collection item for key
 	 *
-	 * @param string $prop The data key.
-	 * @param mixed  $default The default value to return if data key does not exist.
+	 * @param  string $prop  The data key.
+	 * @param  mixed  $default  The default value to return if data key does not exist.
 	 *
 	 * @return mixed The key's value, or the default value
 	 *
@@ -330,7 +334,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Remove item from collection
 	 *
-	 * @param string $key The data key.
+	 * @param  string $key  The data key.
 	 *
 	 * @deprecated 1.7.0
 	 * @see \Stackonet\WP\Framework\Abstracts\Data::remove_prop()
@@ -342,7 +346,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	/**
 	 * Set data
 	 *
-	 * @param array $props The data to be set.
+	 * @param  array $props  The data to be set.
 	 *
 	 * @deprecated 1.7.0
 	 * @see \Stackonet\WP\Framework\Abstracts\Data::set_props()

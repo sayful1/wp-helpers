@@ -373,7 +373,11 @@ class DataStoreBase implements DataStoreInterface {
 		);
 		$default_items = [];
 		foreach ( $default as $item ) {
-			$default_items[ $item[ $this->primary_key ] ] = $item;
+			if ( $item instanceof Data ) {
+				$default_items[ $item->get_id() ] = $item->get_data();
+			} else {
+				$default_items[ $item[ $this->primary_key ] ] = $item;
+			}
 		}
 
 		global $wpdb;
@@ -549,7 +553,7 @@ class DataStoreBase implements DataStoreInterface {
 	 * @type int[] $id__in Array of record id.
 	 * }
 	 *
-	 * @return array
+	 * @return array|Data[]
 	 */
 	public function find_multiple( array $args = [] ): array {
 		global $wpdb;

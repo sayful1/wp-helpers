@@ -1,3 +1,7 @@
+#### 1.14.2
+
+* Fix issue on batch update.
+
 #### 1.14.1
 
 * Fix issue on data read on DatabaseModal
