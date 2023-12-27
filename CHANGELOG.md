@@ -1,3 +1,11 @@
+#### 1.14.0
+
+* Fix background process manual delete does not working when only one item.
+* Update json_validate functionality.
+* Add status count functionality.
+* Add modal option to DatabaseModal class.
+* Update UploadedFile class to read file from url and path.
+
 #### 1.13.0
 
 * Update `\StackonetWPFrameworkTest\Media\UploadedFileTest` class.
