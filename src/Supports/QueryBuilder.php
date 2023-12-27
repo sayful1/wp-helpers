@@ -33,18 +33,29 @@ class QueryBuilder {
 	];
 
 	/**
+	 * Data Model linked to store
+	 *
+	 * @var null
+	 */
+	protected $model = null;
+
+	/**
 	 * Get query builder
 	 *
-	 * @param string $table
+	 * @param  string $table Table name
+	 * @param ?string $modal Modal object.
 	 *
 	 * @return static
 	 */
-	public static function table( string $table ): QueryBuilder {
+	public static function table( string $table, ?string $modal = null ): QueryBuilder {
 		$query_builder = new static();
 		$table         = $query_builder->get_table_name( $table );
 
 		$query_builder->query['table']       = $table[0];
 		$query_builder->query['table_alias'] = $table[1];
+		if ( $modal ) {
+			$query_builder->model = $modal;
+		}
 
 		return $query_builder;
 	}
@@ -112,7 +123,7 @@ class QueryBuilder {
 
 					$_where .= $this->get_sql_for_where( $_item );
 				}
-				$_where  .= ')';
+				$_where .= ')';
 				$where[] = $_where;
 			}
 		}
@@ -133,13 +144,13 @@ class QueryBuilder {
 			$sql .= "DELETE FROM {$table}";
 		} else {
 			$select = implode( ', ', $this->query['select'] );
-			$sql    .= "SELECT {$select} FROM {$table}";
+			$sql   .= "SELECT {$select} FROM {$table}";
 		}
 
 		if ( count( $this->query['join'] ) ) {
 			foreach ( $this->query['join'] as $join ) {
 				$_alias = ! empty( $join['table_alias'] ) ? "AS {$join['table_alias']}" : '';
-				$sql    .= " {$join['type']} JOIN {$join['table']} {$_alias} ON {$join['first_column']} = {$join['second_column']}";
+				$sql   .= " {$join['type']} JOIN {$join['table']} {$_alias} ON {$join['first_column']} = {$join['second_column']}";
 			}
 		}
 
@@ -182,7 +193,7 @@ class QueryBuilder {
 	 * ==============================================================
 	 * 0 -- column, 1 -- value, 2 -- compare operator, 3 -- data type
 	 *
-	 * @param array $args
+	 * @param  array $args
 	 *
 	 * @return array
 	 */
@@ -277,7 +288,7 @@ class QueryBuilder {
 	/**
 	 * Get table name
 	 *
-	 * @param string|null $table
+	 * @param  string|null $table
 	 *
 	 * @return array
 	 */
@@ -298,8 +309,8 @@ class QueryBuilder {
 	/**
 	 * Get column name
 	 *
-	 * @param string $column
-	 * @param string|null $table_name
+	 * @param  string      $column
+	 * @param  string|null $table_name
 	 *
 	 * @return string[]
 	 */
@@ -347,7 +358,7 @@ class QueryBuilder {
 	/**
 	 * Determine whether a query clause is first-order.
 	 *
-	 * @param array $query Meta query arguments.
+	 * @param  array $query  Meta query arguments.
 	 *
 	 * @return bool Whether the query clause is a first-order clause.
 	 */
@@ -358,8 +369,8 @@ class QueryBuilder {
 	/**
 	 * Set order by
 	 *
-	 * @param string $column
-	 * @param string $order
+	 * @param  string $column
+	 * @param  string $order
 	 *
 	 * @return static
 	 */
@@ -389,7 +400,7 @@ class QueryBuilder {
 	/**
 	 * Set offset
 	 *
-	 * @param int $offset
+	 * @param  int $offset
 	 *
 	 * @return static
 	 */
@@ -402,7 +413,7 @@ class QueryBuilder {
 	/**
 	 * Set limit
 	 *
-	 * @param int $limit
+	 * @param  int $limit
 	 *
 	 * @return static
 	 */
@@ -415,7 +426,7 @@ class QueryBuilder {
 	/**
 	 * Set offset from page number
 	 *
-	 * @param int $page
+	 * @param  int $page
 	 *
 	 * @return static
 	 */
@@ -433,7 +444,7 @@ class QueryBuilder {
 	/**
 	 * Set group by parameters
 	 *
-	 * @param string|string[] $group_by
+	 * @param  string|string[] $group_by
 	 *
 	 * @return $this
 	 */
@@ -461,10 +472,10 @@ class QueryBuilder {
 	 * where( 'deleted_at', 'NULL' );
 	 * where( 'updated_at', 'NOT NULL' );
 	 *
-	 * @param array|string $column
-	 * @param string|array $value
-	 * @param string $compare Operator.
-	 * @param string $relation Query relation. 'AND' or 'OR'.
+	 * @param  array|string $column
+	 * @param  string|array $value
+	 * @param  string       $compare  Operator.
+	 * @param  string       $relation  Query relation. 'AND' or 'OR'.
 	 *
 	 * @return $this
 	 */
@@ -520,7 +531,7 @@ class QueryBuilder {
 	/**
 	 * Find a record by primary key value
 	 *
-	 * @param int|string $value
+	 * @param  int|string $value
 	 *
 	 * @return array|null
 	 */
@@ -532,7 +543,7 @@ class QueryBuilder {
 	}
 
 	/**
-	 * @param string|null $as
+	 * @param  string|null $as
 	 *
 	 * @return int|array
 	 */
@@ -554,7 +565,7 @@ class QueryBuilder {
 	/**
 	 * Set columns to select
 	 *
-	 * @param string[]|string $columns Columns to select.
+	 * @param  string[]|string $columns  Columns to select.
 	 *
 	 * @return $this
 	 */
@@ -572,14 +583,19 @@ class QueryBuilder {
 	/**
 	 * Add joint table
 	 *
-	 * @param string $table Table name.
-	 * @param string $first_column First table column.
-	 * @param string $second_column Second table column.
-	 * @param string $type Join type.
+	 * @param  string $table  Table name.
+	 * @param  string $first_column  First table column.
+	 * @param  string $second_column  Second table column.
+	 * @param  string $type  Join type.
 	 *
 	 * @return static
 	 */
-	public function join( string $table, string $first_column, string $second_column, string $type = 'INNER' ): QueryBuilder {
+	public function join(
+		string $table,
+		string $first_column,
+		string $second_column,
+		string $type = 'INNER'
+	): QueryBuilder {
 		list( $table_name, $table_alias ) = $this->get_table_name( $table );
 
 		$type       = in_array( strtoupper( $type ), [ 'LEFT', 'RIGHT', 'INNER' ], true ) ? $type : 'INNER';

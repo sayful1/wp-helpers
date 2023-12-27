@@ -3,6 +3,7 @@
 namespace Stackonet\WP\Framework\Traits;
 
 use Stackonet\WP\Framework\Abstracts\Data;
+use Stackonet\WP\Framework\Abstracts\DataStoreBase;
 use Stackonet\WP\Framework\Interfaces\DataStoreInterface;
 use WP_Error;
 use WP_REST_Request;
@@ -22,7 +23,7 @@ trait ApiCrudOperations {
 	/**
 	 * Get store class
 	 *
-	 * @return DataStoreInterface
+	 * @return DataStoreInterface|DataStoreBase
 	 */
 	abstract public function get_store();
 
@@ -177,23 +178,12 @@ trait ApiCrudOperations {
 						'methods'             => WP_REST_Server::CREATABLE,
 						'callback'            => [ $this, 'batch_operation' ],
 						'args'                => [
-							'create'  => [
-								'type'              => 'array',
+							'action'  => [
+								'type'              => 'string',
+								'enum'              => [ 'create', 'update', 'trash', 'restore', 'delete' ],
 								'validate_callback' => 'rest_validate_request_arg',
 							],
-							'update'  => [
-								'type'              => 'array',
-								'validate_callback' => 'rest_validate_request_arg',
-							],
-							'trash'   => [
-								'type'              => 'array',
-								'validate_callback' => 'rest_validate_request_arg',
-							],
-							'restore' => [
-								'type'              => 'array',
-								'validate_callback' => 'rest_validate_request_arg',
-							],
-							'delete'  => [
+							'payload' => [
 								'type'              => 'array',
 								'validate_callback' => 'rest_validate_request_arg',
 							],
@@ -256,7 +246,7 @@ trait ApiCrudOperations {
 	public function get_items( $request ) {
 		$per_page = (int) $request->get_param( 'per_page' );
 		$page     = (int) $request->get_param( 'page' );
-		$status   = $request->get_param( 'status' );
+		$status   = (string) $request->get_param( 'status' );
 
 		$items      = $this->get_store()->find_multiple( $request->get_params() );
 		$counts     = $this->get_store()->count_records( $request->get_params() );
@@ -265,11 +255,16 @@ trait ApiCrudOperations {
 
 		$items = array_map( [ $this, 'prepare_collection_item_for_response' ], $items );
 
+		$statuses = [];
+		if ( method_exists( $this->get_store(), 'get_statuses_count' ) ) {
+			$statuses = $this->get_store()->get_statuses_count( $status );
+		}
+
 		return $this->respondOK(
 			[
 				'items'      => $items,
 				'pagination' => $pagination,
-				'query_args' => $request->get_params(),
+				'statuses'   => $statuses,
 			]
 		);
 
@@ -405,16 +400,22 @@ trait ApiCrudOperations {
 	 * @return WP_REST_Response
 	 */
 	public function batch_operation( $request ) {
+		$supported_actions = [ 'create', 'update', 'trash', 'restore', 'delete' ];
 		if ( $request->has_param( 'action' ) && $request->has_param( 'payload' ) ) {
 			$action  = $request->get_param( 'action' );
 			$payload = $request->get_param( 'payload' );
-			$this->get_store()->batch( $action, $payload );
+			if ( in_array( $action, $supported_actions, true ) ) {
+				$this->get_store()->batch( $action, $payload );
+			}
 
 			return $this->respondAccepted();
 		}
-		$actions = $request->get_params();
-		foreach ( $actions as $action => $data ) {
-			$this->get_store()->batch( $action, $data );
+
+		// For backward compatibility.
+		foreach ( $request->get_params() as $action => $data ) {
+			if ( in_array( $action, $supported_actions, true ) ) {
+				$this->get_store()->batch( $action, $data );
+			}
 		}
 
 		return $this->respondAccepted();

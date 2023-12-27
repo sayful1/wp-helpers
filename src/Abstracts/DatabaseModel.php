@@ -18,11 +18,11 @@ defined( 'ABSPATH' ) || exit;
  *
  * @method static int[] create_multiple( array $data )
  * @method static bool update_multiple( array $data )
- * @method static Data|ArrayObject find_by_id( int $id )
- * @method static Data|ArrayObject find_single( int $id )
- * @method static array|Data[] find( array $args = [] )
- * @method static array|Data[] find_multiple( array $args = [] )
- * @method static bool create( array $data = [] )
+ * @method static DatabaseModel|ArrayObject find_by_id( int $id )
+ * @method static DatabaseModel|ArrayObject find_single( int $id )
+ * @method static array|DatabaseModel[] find( array $args = [] )
+ * @method static array|DatabaseModel[] find_multiple( array $args = [] )
+ * @method static int create( array $data = [] )
  * @method static bool update( array $data = [] )
  * @method static bool trash( int $id = 0 )
  * @method static bool restore( int $id = 0 )
@@ -34,6 +34,7 @@ defined( 'ABSPATH' ) || exit;
  * @method static bool batch_restore( array $ids = [] )
  * @method static bool batch_delete( array $ids = [] )
  * @method static array count_records( array $args = [] )
+ * @method static array get_statuses_count( ?string $current_status = 'all' )
  * @method static mixed unserialize( $data )
  * @method static mixed serialize( $data )
  * @method static string get_table_name( ?string $table = null )
@@ -107,6 +108,13 @@ abstract class DatabaseModel extends Data {
 	protected $deleted_at = 'deleted_at';
 
 	/**
+	 * Column name for holding record status
+	 *
+	 * @var string
+	 */
+	protected $status = 'status';
+
+	/**
 	 * The number of models to return for pagination.
 	 *
 	 * @var int
@@ -116,7 +124,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Model constructor.
 	 *
-	 * @param mixed $data The data to be read.
+	 * @param  mixed $data  The data to be read.
 	 */
 	public function __construct( $data = [] ) {
 		$this->primary_key      = static::get_primary_key( $this->get_table_name() );
@@ -131,7 +139,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Find multiple records from database
 	 *
-	 * @param array $args The arguments for query.
+	 * @param  array $args  The arguments for query.
 	 *
 	 * @return array|static[]
 	 */
@@ -148,7 +156,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Find record by id
 	 *
-	 * @param int $id The id of the record.
+	 * @param  int $id  The id of the record.
 	 *
 	 * @return ArrayObject|static
 	 */
@@ -161,7 +169,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Method to read a record.
 	 *
-	 * @param mixed $data The data to be read.
+	 * @param  mixed $data  The data to be read.
 	 *
 	 * @return array
 	 */
@@ -206,15 +214,17 @@ abstract class DatabaseModel extends Data {
 				'created_at' => $this->created_at,
 				'updated_at' => $this->updated_at,
 				'deleted_at' => $this->deleted_at,
-			]
+				'status'     => $this->status,
+			],
+			get_called_class()
 		);
 	}
 
 	/**
 	 * Handle store method call
 	 *
-	 * @param string      $name The method name.
-	 * @param array|mixed $arguments The method arguments.
+	 * @param  string      $name  The method name.
+	 * @param  array|mixed $arguments  The method arguments.
 	 *
 	 * @return mixed
 	 * @throws BadMethodCallException When method not found.
@@ -278,8 +288,8 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Handle store method call
 	 *
-	 * @param string      $name The method name.
-	 * @param array|mixed $arguments The method arguments.
+	 * @param  string      $name  The method name.
+	 * @param  array|mixed $arguments  The method arguments.
 	 *
 	 * @return mixed
 	 * @throws BadMethodCallException When method not found.
