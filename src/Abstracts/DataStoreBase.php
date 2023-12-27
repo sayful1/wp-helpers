@@ -89,12 +89,13 @@ class DataStoreBase implements DataStoreInterface {
 	/**
 	 * Get instance of the store
 	 *
-	 * @param  string $table  The table name.
-	 * @param  array  $props  The properties.
+	 * @param  string  $table  The table name.
+	 * @param  array   $props  The properties.
+	 * @param  ?string $modal  Data Model linked to store.
 	 *
 	 * @return DataStoreBase|DataStoreInterface
 	 */
-	public static function get_instance( string $table, array $props = [] ) {
+	public static function get_instance( string $table, array $props = [], ?string $modal = null ) {
 		$class = new static();
 
 		$class->table = $table;
@@ -105,6 +106,7 @@ class DataStoreBase implements DataStoreInterface {
 		}
 		$class->primary_key      = static::get_primary_key( $class->get_table_name() );
 		$class->primary_key_type = static::get_primary_key_data_format( $class->get_table_name() );
+		$class->model            = $modal;
 
 		return $class;
 	}
@@ -404,6 +406,10 @@ class DataStoreBase implements DataStoreInterface {
 			}
 		}
 
+		if ( count( $values ) < 1 ) {
+			return false;
+		}
+
 		$sql  = "INSERT INTO `{$table}` (" . implode( ', ', $columns_names ) . ") VALUES \n" . implode( ",\n", $values );
 		$sql .= "ON DUPLICATE KEY UPDATE \n" . implode( ', ', $update_columns );
 
@@ -564,7 +570,7 @@ class DataStoreBase implements DataStoreInterface {
 				foreach ( $columns as $index => $column ) {
 					$query .= $index > 0 ? ' OR' : '';
 					// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-					$query .= $wpdb->prepare( " $column LIKE %s", '%' . $args['search'] . '%' );
+					$query .= $wpdb->prepare( " $column LIKE %s", '%' . esc_sql( $args['search'] ) . '%' );
 				}
 				$query .= ')';
 			}
@@ -662,7 +668,7 @@ class DataStoreBase implements DataStoreInterface {
 				$results = (array) $wpdb->get_results( $query_status, ARRAY_A );
 
 				foreach ( $results as $row ) {
-					$counts[ $row[ $this->status ] ] = $row['num_rows'];
+					$counts[ $row[ $this->status ] ] = intval( $row['num_rows'] );
 				}
 			}
 
@@ -671,6 +677,29 @@ class DataStoreBase implements DataStoreInterface {
 		}
 
 		return $counts;
+	}
+
+	/**
+	 * Get statuses count
+	 *
+	 * @param  string|null $current_status  Current status.
+	 *
+	 * @return array
+	 */
+	public function get_statuses_count( ?string $current_status = 'all' ): array {
+		$total_items = $this->count_records();
+		$statuses    = [];
+		foreach ( $total_items as $key => $count ) {
+			$label      = str_replace( [ '-', '_' ], ' ', $key );
+			$statuses[] = [
+				'key'    => $key,
+				'label'  => ucfirst( $label ),
+				'count'  => $count,
+				'active' => $key === $current_status,
+			];
+		}
+
+		return $statuses;
 	}
 
 	/**
@@ -904,6 +933,6 @@ class DataStoreBase implements DataStoreInterface {
 	 * @return QueryBuilder
 	 */
 	public function get_query_builder(): QueryBuilder {
-		return QueryBuilder::table( $this->get_table_name() );
+		return QueryBuilder::table( $this->get_table_name(), $this->model );
 	}
 }
