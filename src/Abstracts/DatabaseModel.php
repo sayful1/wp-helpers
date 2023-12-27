@@ -124,7 +124,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Model constructor.
 	 *
-	 * @param  mixed $data  The data to be read.
+	 * @param  mixed  $data  The data to be read.
 	 */
 	public function __construct( $data = [] ) {
 		$this->primary_key      = static::get_primary_key( $this->get_table_name() );
@@ -139,7 +139,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Find multiple records from database
 	 *
-	 * @param  array $args  The arguments for query.
+	 * @param  array  $args  The arguments for query.
 	 *
 	 * @return array|static[]
 	 */
@@ -156,7 +156,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Find record by id
 	 *
-	 * @param  int $id  The id of the record.
+	 * @param  int  $id  The id of the record.
 	 *
 	 * @return ArrayObject|static
 	 */
@@ -169,7 +169,7 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Method to read a record.
 	 *
-	 * @param  mixed $data  The data to be read.
+	 * @param  mixed  $data  The data to be read.
 	 *
 	 * @return array
 	 */
@@ -181,13 +181,20 @@ abstract class DatabaseModel extends Data {
 		$data_store = $this->get_data_store();
 
 		if ( is_array( $data ) && count( $data ) ) {
-			return $data_store->format_item_for_output( $data );
+			$data = $data_store->format_item_for_output( $data );
+			if ( $data instanceof Data ) {
+				return $data->get_data();
+			} elseif ( is_array( $data ) ) {
+				return $data;
+			}
 		}
 
 		if ( is_numeric( $data ) ) {
 			$data = $data_store->find_single( $data );
 			if ( is_array( $data ) ) {
 				return $data;
+			} elseif ( $data instanceof Data ) {
+				return $data->get_data();
 			}
 		}
 
@@ -223,8 +230,8 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Handle store method call
 	 *
-	 * @param  string      $name  The method name.
-	 * @param  array|mixed $arguments  The method arguments.
+	 * @param  string  $name  The method name.
+	 * @param  array|mixed  $arguments  The method arguments.
 	 *
 	 * @return mixed
 	 * @throws BadMethodCallException When method not found.
@@ -288,8 +295,8 @@ abstract class DatabaseModel extends Data {
 	/**
 	 * Handle store method call
 	 *
-	 * @param  string      $name  The method name.
-	 * @param  array|mixed $arguments  The method arguments.
+	 * @param  string  $name  The method name.
+	 * @param  array|mixed  $arguments  The method arguments.
 	 *
 	 * @return mixed
 	 * @throws BadMethodCallException When method not found.

@@ -1,3 +1,7 @@
+#### 1.14.1
+
+* Fix issue on data read on DatabaseModal
+
 #### 1.14.0
 
 * Fix background process manual delete does not working when only one item.
