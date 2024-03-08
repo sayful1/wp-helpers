@@ -1,3 +1,7 @@
+#### 1.14.3
+
+* Add 'screen-options' endpoint on`\Stackonet\WP\Framework\Traits\ApiCrudOperations` class.
+
 #### 1.14.2
 
 * Fix issue on batch update.
