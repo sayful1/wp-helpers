@@ -1,3 +1,7 @@
+#### 1.14.4
+
+* Fix 'OFFSET' issue on `Stackonet\WP\Framework\Abstracts\DataStoreBase` class
+
 #### 1.14.3
 
 * Add 'screen-options' endpoint on`\Stackonet\WP\Framework\Traits\ApiCrudOperations` class.

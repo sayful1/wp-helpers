@@ -605,9 +605,9 @@ class DataStoreBase implements DataStoreInterface {
 			$query .= " ORDER BY {$order_by}";
 			if ( $per_page > 0 ) {
 				$query .= $wpdb->prepare( ' LIMIT %d', $per_page );
-			}
-			if ( $offset >= 0 ) {
-				$query .= $wpdb->prepare( ' OFFSET %d', $offset );
+				if ( $offset >= 0 ) {
+					$query .= $wpdb->prepare( ' OFFSET %d', $offset );
+				}
 			}
 			$items = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
