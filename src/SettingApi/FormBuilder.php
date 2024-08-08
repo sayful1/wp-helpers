@@ -36,7 +36,7 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * Set fields settings
 	 *
-	 * @param array $settings Array of settings.
+	 * @param  array $settings  Array of settings.
 	 *
 	 * @return void
 	 */
@@ -47,7 +47,7 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * Set setting option name.
 	 *
-	 * @param string $option_name Option name.
+	 * @param  string $option_name  Option name.
 	 *
 	 * @return void
 	 */
@@ -58,7 +58,7 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * Set values
 	 *
-	 * @param array $values The values.
+	 * @param  array $values  The values.
 	 *
 	 * @return void
 	 */
@@ -81,7 +81,11 @@ class FormBuilder implements FormBuilderInterface {
 
 			$table .= '<tr>';
 			if ( ! empty( $field['title'] ) ) {
-				$table .= sprintf( '<th scope="row"><label for="%1$s">%2$s</label></th>', $field['id'], $field['title'] );
+				$table .= sprintf(
+					'<th scope="row"><label for="%1$s">%2$s</label></th>',
+					$field['id'],
+					$field['title']
+				);
 			}
 			$table .= '<td>';
 
@@ -106,9 +110,9 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * Settings fields
 	 *
-	 * @param array  $fields Array of fields settings.
-	 * @param string $option_name The option name.
-	 * @param array  $values The values.
+	 * @param  array  $fields  Array of fields settings.
+	 * @param  string $option_name  The option name.
+	 * @param  array  $values  The values.
 	 *
 	 * @return string
 	 */
@@ -123,9 +127,9 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * Text input field
 	 *
-	 * @param array  $field The field settings.
-	 * @param string $name The setting field name.
-	 * @param mixed  $value The value.
+	 * @param  array  $field  The field settings.
+	 * @param  string $name  The setting field name.
+	 * @param  mixed  $value  The value.
 	 *
 	 * @return string
 	 */
@@ -145,9 +149,9 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * The password input field
 	 *
-	 * @param array  $field The field settings.
-	 * @param string $name The setting field name.
-	 * @param mixed  $value The value.
+	 * @param  array  $field  The field settings.
+	 * @param  string $name  The setting field name.
+	 * @param  mixed  $value  The value.
 	 *
 	 * @return string
 	 */
@@ -162,9 +166,9 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * The color input field
 	 *
-	 * @param array  $field The field settings.
-	 * @param string $name The setting field name.
-	 * @param mixed  $value The value.
+	 * @param  array  $field  The field settings.
+	 * @param  string $name  The setting field name.
+	 * @param  mixed  $value  The value.
 	 *
 	 * @return string
 	 */
@@ -183,9 +187,9 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * The textarea input field
 	 *
-	 * @param array  $field The field settings.
-	 * @param string $name The setting field name.
-	 * @param mixed  $value The value.
+	 * @param  array  $field  The field settings.
+	 * @param  string $name  The setting field name.
+	 * @param  mixed  $value  The value.
 	 *
 	 * @return string
 	 */
@@ -209,9 +213,9 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * The checkbox input field
 	 *
-	 * @param array  $field The field settings.
-	 * @param string $name The setting field name.
-	 * @param mixed  $value The value.
+	 * @param  array  $field  The field settings.
+	 * @param  string $name  The setting field name.
+	 * @param  mixed  $value  The value.
 	 *
 	 * @return string
 	 */
@@ -232,19 +236,20 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * The multi checkbox input field
 	 *
-	 * @param array  $field The field settings.
-	 * @param string $name The setting field name.
-	 * @param mixed  $value The value.
+	 * @param  array  $field  The field settings.
+	 * @param  string $name  The setting field name.
+	 * @param  mixed  $value  The value.
 	 *
 	 * @return string
 	 */
 	public function multi_checkbox( array $field, string $name, $value ): string {
+		$value = is_array( $value ) ? $value : [];
 		$table = '<fieldset>';
 		$name  = $name . '[]';
 
 		$table .= sprintf( '<input type="hidden" name="%1$s" value="0">', $name );
 		foreach ( $field['options'] as $key => $label ) {
-			$checked = ( in_array( $key, $value ) ) ? 'checked="checked"' : '';
+			$checked = ( in_array( $key, $value, true ) ) ? 'checked="checked"' : '';
 			$table  .= '<label for="' . $key . '"><input type="checkbox" value="' . $key . '" id="' . $key . '" name="' . $name . '" ' . $checked . '>' . $label . '</label><br>';
 		}
 		$table .= '</fieldset>';
@@ -255,9 +260,9 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * The radio input field
 	 *
-	 * @param array  $field The field settings.
-	 * @param string $name The setting field name.
-	 * @param mixed  $value The value.
+	 * @param  array  $field  The field settings.
+	 * @param  string $name  The setting field name.
+	 * @param  mixed  $value  The value.
 	 *
 	 * @return string
 	 */
@@ -266,7 +271,7 @@ class FormBuilder implements FormBuilderInterface {
 
 		foreach ( $field['options'] as $key => $label ) {
 
-			$checked = ( $value == $key ) ? 'checked="checked"' : '';
+			$checked = ( $value === $key ) ? 'checked="checked"' : '';
 			$table  .= '<label><input type="radio" ' . $checked . ' value="' . $key . '" name="' . $name . '">' . $label . '</label><br>';
 		}
 		$table .= '</p></fieldset>';
@@ -277,18 +282,22 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * The select input field
 	 *
-	 * @param array  $field The field settings.
-	 * @param string $name The setting field name.
-	 * @param mixed  $value The value.
+	 * @param  array  $field  The field settings.
+	 * @param  string $name  The setting field name.
+	 * @param  mixed  $value  The value.
 	 *
 	 * @return string
 	 */
 	public function select( array $field, string $name, $value ): string {
 		if ( isset( $field['multiple'] ) ) {
 			$value = is_array( $value ) ? $value : [];
-			$table = sprintf( '<select id="%1$s" name="%2$s" class="regular-text" multiple>', $field['id'], $name . '[]' );
+			$table = sprintf(
+				'<select id="%1$s" name="%2$s" class="regular-text" multiple>',
+				$field['id'],
+				$name . '[]'
+			);
 			foreach ( $field['options'] as $key => $label ) {
-				$selected = in_array( $key, $value ) ? 'selected="selected"' : '';
+				$selected = in_array( $key, $value, true ) ? 'selected="selected"' : '';
 				$table   .= '<option value="' . $key . '" ' . $selected . '>' . $label . '</option>';
 			}
 			$table .= '</select>';
@@ -298,7 +307,7 @@ class FormBuilder implements FormBuilderInterface {
 
 		$table = sprintf( '<select id="%1$s" name="%2$s" class="regular-text">', $field['id'], $name );
 		foreach ( $field['options'] as $key => $label ) {
-			$selected = ( $value == $key ) ? 'selected="selected"' : '';
+			$selected = ( $value === $key ) ? 'selected="selected"' : '';
 			$table   .= '<option value="' . $key . '" ' . $selected . '>' . $label . '</option>';
 		}
 		$table .= '</select>';
@@ -309,9 +318,9 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * Get available image sizes
 	 *
-	 * @param array  $field The field settings.
-	 * @param string $name The setting field name.
-	 * @param mixed  $value The value.
+	 * @param  array  $field  The field settings.
+	 * @param  string $name  The setting field name.
+	 * @param  mixed  $value  The value.
 	 *
 	 * @return string
 	 */
@@ -355,9 +364,9 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * The wp_editor input field
 	 *
-	 * @param array  $field The field settings.
-	 * @param string $name The setting field name.
-	 * @param mixed  $value The value.
+	 * @param  array  $field  The field settings.
+	 * @param  string $name  The setting field name.
+	 * @param  mixed  $value  The value.
 	 *
 	 * @return string
 	 */
@@ -383,9 +392,9 @@ class FormBuilder implements FormBuilderInterface {
 	/**
 	 * The html field
 	 *
-	 * @param array  $field The field settings.
-	 * @param string $name The setting field name.
-	 * @param mixed  $value The value.
+	 * @param  array  $field  The field settings.
+	 * @param  string $name  The setting field name.
+	 * @param  mixed  $value  The value.
 	 *
 	 * @return mixed
 	 */
