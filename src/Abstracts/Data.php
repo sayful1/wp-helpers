@@ -259,8 +259,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	 *
 	 * @return void
 	 */
-	#[\ReturnTypeWillChange]
-	public function offsetSet( $offset, $value ) {
+	public function offsetSet( $offset, $value ):void {
 		$this->set_prop( $offset, $value );
 	}
 
@@ -271,8 +270,7 @@ class Data implements ArrayAccess, JsonSerializable {
 	 *
 	 * @return void
 	 */
-	#[\ReturnTypeWillChange]
-	public function offsetUnset( $offset ) {
+	public function offsetUnset( $offset ):void {
 		$this->remove_prop( $offset );
 	}
 

@@ -1,3 +1,7 @@
+#### 1.14.5
+
+* Fix 'PHP Deprecated' notice for return type declaration.
+
 #### 1.14.4
 
 * Fix 'OFFSET' issue on `Stackonet\WP\Framework\Abstracts\DataStoreBase` class

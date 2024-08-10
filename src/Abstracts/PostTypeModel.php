@@ -62,7 +62,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Class constructor.
 	 *
-	 * @param null|int|WP_Post $post The post object or post id or null.
+	 * @param  null|int|WP_Post $post  The post object or post id or null.
 	 */
 	public function __construct( $post = null ) {
 		$post = get_post( $post );
@@ -148,13 +148,16 @@ abstract class PostTypeModel implements JsonSerializable {
 	 * @return string
 	 */
 	public function get_excerpt(): string {
-		return apply_filters( 'the_excerpt', apply_filters( 'get_the_excerpt', $this->post->post_excerpt, $this->post ) );
+		return apply_filters(
+			'the_excerpt',
+			apply_filters( 'get_the_excerpt', $this->post->post_excerpt, $this->post )
+		);
 	}
 
 	/**
 	 * Get thumbnail src
 	 *
-	 * @param string $size The image size.
+	 * @param  string $size  The image size.
 	 *
 	 * @return ArrayObject|array
 	 */
@@ -185,8 +188,8 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Get meta data
 	 *
-	 * @param string $key The meta key.
-	 * @param mixed  $default Default value.
+	 * @param  string $key  The meta key.
+	 * @param  mixed  $default  Default value.
 	 *
 	 * @return mixed
 	 */
@@ -213,8 +216,8 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Get image data
 	 *
-	 * @param int    $image_id The image id.
-	 * @param string $size The image size.
+	 * @param  int    $image_id  The image id.
+	 * @param  string $size  The image size.
 	 *
 	 * @return array|ArrayObject
 	 */
@@ -239,7 +242,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Get query
 	 *
-	 * @param array $args array of query arguments.
+	 * @param  array $args  array of query arguments.
 	 *
 	 * @return WP_Query
 	 */
@@ -265,7 +268,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Find data
 	 *
-	 * @param array $args array of query arguments.
+	 * @param  array $args  array of query arguments.
 	 *
 	 * @return static[]|array
 	 */
@@ -283,7 +286,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Method to create a new record
 	 *
-	 * @param array $data An array of elements that make up a post to insert.
+	 * @param  array $data  An array of elements that make up a post to insert.
 	 *
 	 * @return int|WP_Error The post ID on success. The value 0 or WP_Error on failure.
 	 */
@@ -296,7 +299,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Method to create a new record
 	 *
-	 * @param array $data An array of elements that make up a post to update.
+	 * @param  array $data  An array of elements that make up a post to update.
 	 *
 	 * @return int|WP_Error The post ID on success. The value 0 or WP_Error on failure.
 	 */
@@ -309,7 +312,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Delete data
 	 *
-	 * @param int $id The post id.
+	 * @param  int $id  The post id.
 	 *
 	 * @return bool
 	 */
@@ -320,7 +323,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Send an item to trash
 	 *
-	 * @param int $id The post id.
+	 * @param  int $id  The post id.
 	 *
 	 * @return bool
 	 */
@@ -331,7 +334,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Restore an item from trash
 	 *
-	 * @param int $id The post id.
+	 * @param  int $id  The post id.
 	 *
 	 * @return bool
 	 */
@@ -342,10 +345,10 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Get post type args
 	 *
-	 * @param string $menu_name The menu name.
-	 * @param string $name The name in plural form.
-	 * @param string $singular_name The name in singular form.
-	 * @param array  $args Additional arguments.
+	 * @param  string $menu_name  The menu name.
+	 * @param  string $name  The name in plural form.
+	 * @param  string $singular_name  The name in singular form.
+	 * @param  array  $args  Additional arguments.
 	 *
 	 * @return array
 	 */
@@ -414,9 +417,9 @@ abstract class PostTypeModel implements JsonSerializable {
 	/**
 	 * Save meta data
 	 *
-	 * @param WP_Post|int $post The post id or post object.
-	 * @param string      $source Data source. admin-ui or rest-api.
-	 * @param array       $values The values to be saved.
+	 * @param  WP_Post|int $post  The post id or post object.
+	 * @param  string      $source  Data source. admin-ui or rest-api.
+	 * @param  array       $values  The values to be saved.
 	 */
 	public static function save_meta_data( $post, string $source = 'admin-ui', array $values = [] ) {
 		$post = get_post( $post );
@@ -460,8 +463,7 @@ abstract class PostTypeModel implements JsonSerializable {
 	 *
 	 * @inheritDoc
 	 */
-	#[\ReturnTypeWillChange]
-	public function jsonSerialize() {
+	public function jsonSerialize(): array {
 		return $this->to_array();
 	}
 }

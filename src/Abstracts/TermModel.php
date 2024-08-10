@@ -61,7 +61,7 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Class constructor.
 	 *
-	 * @param int|WP_Term|null $term The term id or term object or null.
+	 * @param  int|WP_Term|null $term  The term id or term object or null.
 	 */
 	public function __construct( $term = null ) {
 		if ( is_numeric( $term ) || $term instanceof WP_Term ) {
@@ -137,7 +137,7 @@ abstract class TermModel implements JsonSerializable {
 	 * Get thumbnail src
 	 * By default, WordPress term does not have thumbnail image. We are going to store image id to term metadata.
 	 *
-	 * @param string $size The image size.
+	 * @param  string $size  The image size.
 	 *
 	 * @return ArrayObject|array
 	 */
@@ -150,8 +150,8 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Get meta data
 	 *
-	 * @param string $key The meta key.
-	 * @param mixed  $default The default value.
+	 * @param  string $key  The meta key.
+	 * @param  mixed  $default  The default value.
 	 *
 	 * @return mixed
 	 */
@@ -178,8 +178,8 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Get image data.
 	 *
-	 * @param int    $image_id The image id.
-	 * @param string $size The image size.
+	 * @param  int    $image_id  The image id.
+	 * @param  string $size  The image size.
 	 *
 	 * @return array|ArrayObject
 	 */
@@ -204,7 +204,7 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Get query
 	 *
-	 * @param array $args Term query arguments.
+	 * @param  array $args  Term query arguments.
 	 *
 	 * @return WP_Term_Query
 	 */
@@ -217,8 +217,8 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Method to create a new record
 	 *
-	 * @param string $term The term slug or name to be created.
-	 * @param array  $args Optional arguments.
+	 * @param  string $term  The term slug or name to be created.
+	 * @param  array  $args  Optional arguments.
 	 *
 	 * @return array|WP_Error An array containing the `term_id` and `term_taxonomy_id`, WP_Error otherwise.
 	 */
@@ -229,8 +229,8 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Method to create a new record
 	 *
-	 * @param int   $term_id The term id to be updated.
-	 * @param array $args Term arguments.
+	 * @param  int   $term_id  The term id to be updated.
+	 * @param  array $args  Term arguments.
 	 *
 	 * @return array|WP_Error An array containing the `term_id` and `term_taxonomy_id`, WP_Error otherwise.
 	 */
@@ -241,7 +241,7 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Delete data
 	 *
-	 * @param int $term_id The term id to be deleted.
+	 * @param  int $term_id  The term id to be deleted.
 	 *
 	 * @return bool
 	 */
@@ -252,7 +252,7 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Find for a post
 	 *
-	 * @param int $post_id The post id.
+	 * @param  int $post_id  The post id.
 	 *
 	 * @return array|self[]
 	 */
@@ -273,10 +273,10 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Get term arguments.
 	 *
-	 * @param string $menu_name The menu name.
-	 * @param string $name The name in plural form.
-	 * @param string $singular_name The name in singular form.
-	 * @param array  $args Additional arguments.
+	 * @param  string $menu_name  The menu name.
+	 * @param  string $name  The name in plural form.
+	 * @param  string $singular_name  The name in singular form.
+	 * @param  array  $args  Additional arguments.
 	 *
 	 * @return array
 	 */
@@ -328,12 +328,17 @@ abstract class TermModel implements JsonSerializable {
 	/**
 	 * Save category fields
 	 *
-	 * @param int    $term_id Term ID being saved.
-	 * @param string $taxonomy Taxonomy slug.
-	 * @param string $source Data source. admin-ui or rest-api.
-	 * @param array  $values Data to be saved.
+	 * @param  int    $term_id  Term ID being saved.
+	 * @param  string $taxonomy  Taxonomy slug.
+	 * @param  string $source  Data source. admin-ui or rest-api.
+	 * @param  array  $values  Data to be saved.
 	 */
-	public static function save_form_fields( int $term_id, string $taxonomy, string $source = 'admin-ui', array $values = [] ) {
+	public static function save_form_fields(
+		int $term_id,
+		string $taxonomy,
+		string $source = 'admin-ui',
+		array $values = []
+	) {
 		if ( static::TAXONOMY !== $taxonomy ) {
 			return;
 		}
@@ -368,8 +373,7 @@ abstract class TermModel implements JsonSerializable {
 	 *
 	 * @inheritDoc
 	 */
-	#[\ReturnTypeWillChange]
-	public function jsonSerialize() {
+	public function jsonSerialize(): array {
 		return $this->to_array();
 	}
 }

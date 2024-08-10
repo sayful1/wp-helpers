@@ -43,14 +43,14 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 *
 	 * @return array
 	 */
-	public function to_array():array {
+	public function to_array(): array {
 		return $this->all();
 	}
 
 	/**
 	 * Does this collection have a given key?
 	 *
-	 * @param string $key The data key.
+	 * @param  string $key  The data key.
 	 *
 	 * @return bool
 	 */
@@ -61,8 +61,8 @@ class Collection implements CollectionInterface, JsonSerializable {
 	/**
 	 * Set collection item
 	 *
-	 * @param null|string $key The data key.
-	 * @param mixed       $value The data value.
+	 * @param  null|string $key  The data key.
+	 * @param  mixed       $value  The data value.
 	 */
 	public function set( ?string $key, $value ) {
 		if ( is_null( $key ) ) {
@@ -77,8 +77,8 @@ class Collection implements CollectionInterface, JsonSerializable {
 	/**
 	 * Get collection item for key
 	 *
-	 * @param string $key The data key.
-	 * @param mixed  $default The default value to return if data key does not exist.
+	 * @param  string $key  The data key.
+	 * @param  mixed  $default  The default value to return if data key does not exist.
 	 *
 	 * @return mixed The key's value, or the default value
 	 */
@@ -89,7 +89,7 @@ class Collection implements CollectionInterface, JsonSerializable {
 	/**
 	 * Add item to collection, replacing existing items with the same data key
 	 *
-	 * @param array $items Key-value array of data to append to this collection.
+	 * @param  array $items  Key-value array of data to append to this collection.
 	 */
 	public function replace( array $items ) {
 		foreach ( $items as $key => $value ) {
@@ -109,7 +109,7 @@ class Collection implements CollectionInterface, JsonSerializable {
 	/**
 	 * Remove item from collection
 	 *
-	 * @param string $key The data key.
+	 * @param  string $key  The data key.
 	 */
 	public function remove( string $key ) {
 		if ( $this->has( $key ) ) {
@@ -135,7 +135,7 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 *
 	 * @link http://php.net/manual/en/arrayaccess.offsetexists.php
 	 *
-	 * @param mixed $offset An offset to check for.
+	 * @param  mixed $offset  An offset to check for.
 	 *
 	 * @return boolean true on success or false on failure.
 	 */
@@ -148,10 +148,11 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 *
 	 * @link http://php.net/manual/en/arrayaccess.offsetget.php
 	 *
-	 * @param mixed $offset The offset to retrieve.
+	 * @param  mixed $offset  The offset to retrieve.
 	 *
 	 * @return mixed Can return all value types.
 	 */
+	#[\ReturnTypeWillChange]
 	public function offsetGet( $offset ) {
 		return $this->get( $offset );
 	}
@@ -161,12 +162,12 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 *
 	 * @link http://php.net/manual/en/arrayaccess.offsetset.php
 	 *
-	 * @param mixed $offset The offset to assign the value to.
-	 * @param mixed $value The value to set.
+	 * @param  mixed $offset  The offset to assign the value to.
+	 * @param  mixed $value  The value to set.
 	 *
 	 * @return void
 	 */
-	public function offsetSet( $offset, $value ) {
+	public function offsetSet( $offset, $value ): void {
 		$this->set( $offset, $value );
 	}
 
@@ -175,11 +176,11 @@ class Collection implements CollectionInterface, JsonSerializable {
 	 *
 	 * @link http://php.net/manual/en/arrayaccess.offsetunset.php
 	 *
-	 * @param mixed $offset The offset to unset.
+	 * @param  mixed $offset  The offset to unset.
 	 *
 	 * @return void
 	 */
-	public function offsetUnset( $offset ) {
+	public function offsetUnset( $offset ): void {
 		$this->remove( $offset );
 	}
 
