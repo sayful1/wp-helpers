@@ -1,3 +1,7 @@
+#### 1.15.0
+
+* Update `Stackonet\WP\Framework\Abstracts\Data` class to support getter on to_array() method.
+
 #### 1.14.5
 
 * Fix 'PHP Deprecated' notice for return type declaration.
